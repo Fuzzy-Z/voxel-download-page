@@ -28,29 +28,19 @@ function detectUserPlatform() {
 
   let osName = 'Windows';
   let arch = 'x64';
-  let ext = '.exe';
-  let size = '18.4 MB';
+  let size = '143.98 MB';
   let osIcon = '⊞';
-  let targetId = 'download-win';
+  let isAvailable = true;
+  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/latest/download/Voxel.exe';
 
   if (userAgent.includes('mac') || platform.includes('mac')) {
     osName = 'macOS';
-    ext = '.dmg';
-    size = '17.9 MB';
     osIcon = '';
-    targetId = 'download-mac';
-    // Detect Apple Silicon vs Intel
-    if (navigator.userAgentData) {
-      // modern high-entropy API if available
-    }
-    arch = 'Universal (M-Series / Intel)';
+    isAvailable = false;
   } else if (userAgent.includes('linux') || platform.includes('linux')) {
     osName = 'Linux';
-    ext = '.AppImage';
-    size = '19.1 MB';
     osIcon = '🐧';
-    targetId = 'download-linux';
-    arch = 'x86_64';
+    isAvailable = false;
   }
 
   // Update Main Download CTA text & properties
@@ -60,10 +50,19 @@ function detectUserPlatform() {
   const mainBtn = document.getElementById('primaryDownloadBtn');
 
   if (titleEl && subEl && iconEl && mainBtn) {
-    titleEl.textContent = `Baixar para ${osName}`;
-    subEl.textContent = `v1.0.35 (${arch}) • ${size}`;
-    iconEl.textContent = osIcon;
-    mainBtn.href = `#${targetId}`;
+    if (isAvailable) {
+      titleEl.textContent = `Baixar para ${osName}`;
+      subEl.textContent = `v1.0.35 (Portátil) • ${size}`;
+      iconEl.textContent = osIcon;
+      mainBtn.href = directDownloadUrl;
+      mainBtn.setAttribute('download', 'Voxel.exe');
+    } else {
+      titleEl.textContent = `${osName} (Em andamento)`;
+      subEl.textContent = `v1.0.35 • Em desenvolvimento`;
+      iconEl.textContent = osIcon;
+      mainBtn.href = `#downloads`;
+      mainBtn.removeAttribute('download');
+    }
   }
 }
 
