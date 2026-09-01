@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="monolith">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voxel — Comunicação Pura, Áudio de Baixa Latência e Voz P2P</title>
+  
+  <!-- SEO Metadata -->
+  <meta name="description" content="Voxel é o aplicativo de comunicação definitivo: chamadas de voz com latência ultrabaixa via WebRTC, compartilhamento de tela em 60 FPS, player de música integrado e servidores sem bloatware.">
+  <meta name="keywords" content="voxel, pulsecord, discord alternative, webrtc voice, low latency chat, screen share 60fps, music bot, local first, download voxel">
+  <meta name="author" content="Fuzzy-Z">
+  <meta name="theme-color" content="#0a0c0e">
+  <link rel="canonical" href="https://voxel.app">
+
+  <!-- Open Graph / Discord / Twitter Cards -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://voxel.app/">
+  <meta property="og:title" content="Voxel — Comunicação Sólida, Sem Ruído">
+  <meta property="og:description" content="Voz cristalina com codec Opus a 384kbps, compartilhamento de tela a 60 FPS, player de música integrado e servidores privados sem telemetria pesada.">
+  <meta property="og:image" content="assets/logo.png">
+
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="Voxel — Comunicação Sólida, Sem Ruído">
+  <meta property="twitter:description" content="Aplicativo de voz, texto e streaming de baixa latência construído para estabilidade e foco.">
+  <meta property="twitter:image" content="assets/logo.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="alternate icon" href="assets/favicon.ico">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       NAVIGATION HEADER
+       ========================================================================= -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="#" class="brand-logo" aria-label="Voxel Home">
+        <img src="assets/icon.png" alt="Voxel Logo" class="brand-img" width="28" height="28">
+        <span>VOXEL</span>
+        <span class="version-tag">v1.0.35</span>
+      </a>
+
+      <nav aria-label="Navegação do Site">
+        <ul class="nav-links">
+          <li><a href="#recursos">Recursos</a></li>
+          <li><a href="#audio-engine">Motor de Áudio</a></li>
+          <li><a href="#benchmarks">Comparativo</a></li>
+          <li><a href="#downloads">Downloads</a></li>
+          <li><a href="#atalhos">Atalhos</a></li>
+          <li><a href="#changelog">Novidades</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <a href="https://github.com/Fuzzy-Z/voxel-download-page" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" aria-label="Código Fonte no GitHub">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="#downloads" class="btn btn-primary btn-sm">
+          <span>Baixar Voxel</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       HERO SECTION
+       ========================================================================= -->
+  <section class="hero">
+    <div class="container hero-grid">
+      
+      <div class="hero-content">
+        <div class="eyebrow">
+          <span class="badge-dot"></span>
+          <span>VOZ P2P // WEBRTC DE BAIXA LATÊNCIA</span>
+        </div>
+
+        <h1 class="hero-headline">
+          Comunicação crua, sólida e sem ruído.
+        </h1>
+
+        <p class="hero-subhead">
+          O Voxel foi desenhado para quem quer conversar, jogar e transmitir com máxima fidelidade. Salas de voz cristalinas com codec Opus a 384 kbps, compartilhamento de tela a 60 FPS e reprodutor de música embutido — sem assinaturas abusivas, sem telemetria pesada e sem distrações.
+        </p>
+
+        <div class="hero-ctas">
+          <div class="download-cta-group">
+            <a href="#downloads" id="primaryDownloadBtn" class="download-btn-main">
+              <div class="download-meta">
+                <span class="download-title" id="primaryDownloadTitle">Baixar para Windows</span>
+                <span class="download-subtitle" id="primaryDownloadSub">v1.0.35 (Portátil / Instalador) • ~40 MB</span>
+              </div>
+              <span class="download-os-icon" id="primaryDownloadIcon">⊞</span>
+            </a>
+            <a href="#downloads" class="platform-dropdown-btn" title="Todas as versões e plataformas">
+              <span>Opções ▾</span>
+            </a>
+          </div>
+
+          <div class="quick-install-box">
+            <div class="quick-install-code">
+              <span class="cli-prompt">v1.0.35</span>
+              <span>Lançamento Estável • Atualizações automáticas ativas</span>
+            </div>
+            <a href="#downloads" class="copy-btn">
+              VER ARQUIVOS
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-badges">
+          <div class="hero-badge-item">
+            <span class="badge-dot"></span>
+            <span>SERVIDOR VOX-NET ONLINE</span>
+          </div>
+          <div class="hero-badge-item">
+            <span>OPUS 384 KBPS</span>
+          </div>
+          <div class="hero-badge-item">
+            <span>60 FPS SCREENSHARE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIGNATURE ELEMENT: INTERACTIVE 3D ISOMETRIC VOXEL & AUDIO VISUALIZER HUD -->
+      <div class="voxel-viewport-container" aria-label="Visualizador Isométrico 3D Voxel">
+        
+        <div class="viewport-toolbar">
+          <div class="viewport-info">
+            <span class="live-signal-badge">● REDE: 14ms</span>
+            <span class="viewport-coords" id="voxelCoords">BITRATE: 384 KBPS</span>
+            <span id="voxelFps">60 FPS</span>
+          </div>
+
+          <div class="viewport-actions">
+            <button type="button" class="tool-btn active" data-tool="add" title="Adicionar Bloco Voxel [Tecla B]">Adicionar [B]</button>
+            <button type="button" class="tool-btn" data-tool="remove" title="Remover Bloco Voxel [Tecla D]">Remover [D]</button>
+            <button type="button" class="tool-btn" id="toggleWireframe" title="Modo Linhas Estruturais [Tecla W]">Aramado [W]</button>
+            <button type="button" class="tool-btn active" id="toggleRotate" title="Pausar/Ativar Rotação [Tecla R]">Girar [R]</button>
+          </div>
+        </div>
+
+        <div class="voxel-canvas-stage">
+          <canvas id="voxelCanvas"></canvas>
+        </div>
+
+        <div class="viewport-footer">
+          <div class="material-selector">
+            <span class="mat-label">Matéria:</span>
+            <button type="button" class="mat-pill selected" data-mat="slate">
+              <span class="mat-color-dot" style="background: #64748b;"></span> Ardósia
+            </button>
+            <button type="button" class="mat-pill" data-mat="obsidian">
+              <span class="mat-color-dot" style="background: #2d3748;"></span> Basalto
+            </button>
+            <button type="button" class="mat-pill" data-mat="brass">
+              <span class="mat-color-dot" style="background: #d4a373;"></span> Latão
+            </button>
+            <button type="button" class="mat-pill" data-mat="concrete">
+              <span class="mat-color-dot" style="background: #a0aec0;"></span> Concreto
+            </button>
+          </div>
+
+          <div class="preset-selector">
+            <span class="mat-label">Modelos:</span>
+            <button type="button" class="tool-btn" data-preset="monolith" title="Carregar Logotipo Voxel [1]">1. Logo Voxel</button>
+            <button type="button" class="tool-btn" data-preset="arch" title="Carregar Portal [2]">2. Portal</button>
+            <button type="button" class="tool-btn" data-preset="slab" title="Carregar Base Plana [3]">3. Plano</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       CORE FEATURE MATRIX (6 PILLARS)
+       ========================================================================= -->
+  <section class="section" id="recursos">
+    <div class="container">
+      <div class="section-header">
+        <div class="eyebrow">ARQUITETURA DE COMUNICAÇÃO</div>
+        <h2 class="section-title">Engenharia focada no essencial. Sem firulas.</h2>
+        <p class="section-desc">
+          Tudo o que você precisa para se comunicar em alta performance, sem recursos desnecessários que deixam seu computador lento.
+        </p>
+      </div>
+
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <div>
+            <div class="pillar-num">01 / ÁUDIO</div>
+            <h3 class="pillar-title">Voz WebRTC Cristalina</h3>
+            <p class="pillar-desc">
+              Conexões P2P diretas e servidores de sinalização de alta velocidade com codec Opus de até 384 kbps e cancelamento de eco integrado.
+            </p>
+          </div>
+          <div class="pillar-meta">
+            <span>LATÊNCIA < 20MS</span>
+          </div>
+        </div>
+
+        <div class="pillar-card">
+          <div>
+            <div class="pillar-num">02 / STREAMING</div>
+            <h3 class="pillar-title">Transmissão a 60 FPS</h3>
+            <p class="pillar-desc">
+              Compartilhe sua tela, gameplay ou janelas específicas em resolução nativa com captura de áudio direto da aplicação sem stutter.
+            </p>
+          </div>
+          <div class="pillar-meta">
+            <span>HARDWARE ACCELERATED</span>
+          </div>
+        </div>
+
+        <div class="pillar-card">
+          <div>
+            <div class="pillar-num">03 / MÚSICA</div>
+            <h3 class="pillar-title">Player Integrado</h3>
+            <p class="pillar-desc">
+              Toque músicas sincronizadas na sala de voz sem depender de bots externos de terceiros que caem a todo instante. Controle unificado na UI.
+            </p>
+          </div>
+          <div class="pillar-meta">
+            <span>FILA DE REPRODUÇÃO LOCAL</span>
+          </div>
+        </div>
+
+        <div class="pillar-card">
+          <div>
+            <div class="pillar-num">04 / ESTRUTURA</div>
+            <h3 class="pillar-title">Servidores & Fóruns</h3>
+            <p class="pillar-desc">
+              Crie comunidades completas com canais de voz, canais de texto, fóruns temáticos, atribuição de cargos e gerenciamento granular de permissões.
+            </p>
+          </div>
+          <div class="pillar-meta">
+            <span>ROLES & PERMISSIONS</span>
+          </div>
+        </div>
+
+        <div class="pillar-card">
+          <div>
+            <div class="pillar-num">05 / PRIVACIDADE</div>
+            <h3 class="pillar-title">DMs & Mensagens Diretas</h3>
+            <p class="pillar-desc">
+              Conversas diretas ponto a ponto, envio de arquivos, histórico persistente seguro e suporte a gravação e compartilhamento de clips.
+            </p>
+          </div>
+          <div class="pillar-meta">
+            <span>SEM RASTREAMENTO INVASIVO</span>
+          </div>
+        </div>
+
+        <div class="pillar-card">
+          <div>
+            <div class="pillar-num">06 / CUSTOMIZAÇÃO</div>
+            <h3 class="pillar-title">Temas Sóbrios e Imersivos</h3>
+            <p class="pillar-desc">
+              Escolha entre o tema escuro sólido padrão (Basalto/Ardósia) ou variantes de atmosfera como *Floresta* e *Petal Mist* sem luzes ofuscantes.
+            </p>
+          </div>
+          <div class="pillar-meta">
+            <span>PERSONALIZAÇÃO PURA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       AUDIO & REAL-TIME ENGINE SECTION
+       ========================================================================= -->
+  <section class="section" id="audio-engine">
+    <div class="container">
+      <div class="section-header">
+        <div class="eyebrow">MOTOR DE PROCESSAMENTO</div>
+        <h2 class="section-title">Fidelidade sonora sem concessões.</h2>
+        <p class="section-desc">
+          O motor de áudio do Voxel processa sinais em tempo real com controle de ganho adaptativo e analisador de espectro de frequências.
+        </p>
+      </div>
+
+      <div class="benchmark-layout">
+        
+        <div class="benchmarks-table-wrap">
+          <table class="bench-table">
+            <thead>
+              <tr>
+                <th>Especificação de Voz</th>
+                <th>Voxel Engine</th>
+                <th>Outros Apps Convencionais</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="bench-metric-name">Taxa de Bits Máxima de Áudio</span>
+                  <span class="bench-metric-sub">Qualidade do Codec Opus</span>
+                </td>
+                <td><span class="bench-val-voxel">384 kbps (Gratuito)</span></td>
+                <td><span class="bench-val-competitor">64 ~ 128 kbps (Pago)</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="bench-metric-name">Taxa de Quadros no Screenshare</span>
+                  <span class="bench-metric-sub">Streaming de Telas e Jogos</span>
+                </td>
+                <td><span class="bench-val-voxel">60 FPS 1080p / 2K</span></td>
+                <td><span class="bench-val-competitor">30 FPS 720p (Restrito)</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="bench-metric-name">Player de Música Embutido</span>
+                  <span class="bench-metric-sub">Reprodução direta na chamada</span>
+                </td>
+                <td><span class="bench-val-voxel">Nativo na Interface</span></td>
+                <td><span class="bench-val-competitor">Requer Bots Externos</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="bench-metric-name">Impacto de CPU Durante Jogos</span>
+                  <span class="bench-metric-sub">Uso em segundo plano</span>
+                </td>
+                <td><span class="bench-val-voxel">< 1.2% CPU</span></td>
+                <td><span class="bench-val-competitor">8.5% ~ 18.0% CPU</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="bench-metric-name">Assinatura Obrigatória para Recursos</span>
+                  <span class="bench-metric-sub">Nitro / Paywalls</span>
+                </td>
+                <td><span class="bench-val-voxel">Zero Paywall</span></td>
+                <td><span class="bench-val-competitor">Mensalidades Recorrentes</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="spec-blueprint-card">
+          <div class="spec-header">
+            <span class="spec-tag">MATRIZ TÉCNICA VOXEL</span>
+            <span class="version-tag">PRODUÇÃO v1.0.35</span>
+          </div>
+
+          <ul class="spec-list">
+            <li class="spec-item">
+              <span class="spec-k">Protocolo de Sinalização:</span>
+              <span class="spec-v">Socket.IO + WebSockets</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-k">Transporte de Voz:</span>
+              <span class="spec-v">WebRTC Mesh / SFU</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-k">Motor de Áudio:</span>
+              <span class="spec-v">Web Audio API + AudioContext</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-k">Segurança de Sessão:</span>
+              <span class="spec-v">Criptografia DTLS/SRTP</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-k">Distribuição do App:</span>
+              <span class="spec-v">ASAR Otimizado + Electron 35</span>
+            </li>
+            <li class="spec-item">
+              <span class="spec-k">Sistema de Atualização:</span>
+              <span class="spec-v">Hot-patch em segundo plano</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       DOWNLOAD MATRIX (WINDOWS, MACOS, LINUX)
+       ========================================================================= -->
+  <section class="section download-section" id="downloads">
+    <div class="container">
+      <div class="section-header">
+        <div class="eyebrow">DOWNLOAD OFICIAL</div>
+        <h2 class="section-title">Escolha seu instalador do Voxel.</h2>
+        <p class="section-desc">
+          Disponível em versão portátil instantânea (sem necessidade de instalação) ou instalador padrão.
+        </p>
+      </div>
+
+      <div class="platform-cards-grid">
+        
+        <!-- Windows Card -->
+        <div class="platform-card" id="download-win">
+          <div>
+            <div class="platform-card-header">
+              <div class="platform-os-title">
+                <span>⊞</span>
+                <span>Windows</span>
+              </div>
+              <span class="platform-arch-pill">x64 / ARM64</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.88rem;">
+              Compatível com Windows 10 e Windows 11. Executável portátil e instalador com suporte a aceleração gráfica.
+            </p>
+
+            <div class="platform-file-list">
+              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span>Voxel Portátil (.exe)</span>
+                <span class="asset-meta">~42 MB</span>
+              </a>
+              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span>Instalador Setup (.exe)</span>
+                <span class="asset-meta">~45 MB</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="checksum-drawer">
+            <span>STATUS</span>
+            <span class="checksum-hash">COMPILADO // PRONTO</span>
+            <button type="button" class="copy-btn" data-copy="https://github.com/Fuzzy-Z/voxel-download-page/releases">LINK</button>
+          </div>
+        </div>
+
+        <!-- macOS Card -->
+        <div class="platform-card" id="download-mac">
+          <div>
+            <div class="platform-card-header">
+              <div class="platform-os-title">
+                <span></span>
+                <span>macOS</span>
+              </div>
+              <span class="platform-arch-pill">Universal</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.88rem;">
+              Otimizado para chips Apple Silicon (M1, M2, M3, M4) e Macs com processador Intel x86_64.
+            </p>
+
+            <div class="platform-file-list">
+              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span>Imagem de Disco (.dmg)</span>
+                <span class="asset-meta">~40 MB</span>
+              </a>
+              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span>Arquivo Comprimido (.zip)</span>
+                <span class="asset-meta">~38 MB</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="checksum-drawer">
+            <span>STATUS</span>
+            <span class="checksum-hash">COMPILADO // PRONTO</span>
+            <button type="button" class="copy-btn" data-copy="https://github.com/Fuzzy-Z/voxel-download-page/releases">LINK</button>
+          </div>
+        </div>
+
+        <!-- Linux Card -->
+        <div class="platform-card" id="download-linux">
+          <div>
+            <div class="platform-card-header">
+              <div class="platform-os-title">
+                <span>🐧</span>
+                <span>Linux</span>
+              </div>
+              <span class="platform-arch-pill">x86_64</span>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.88rem;">
+              Pacote universal AppImage e binários Debian/Ubuntu para compatibilidade com qualquer distribuição moderna.
+            </p>
+
+            <div class="platform-file-list">
+              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span>Pacote AppImage</span>
+                <span class="asset-meta">~44 MB</span>
+              </a>
+              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span>Debian / Ubuntu (.deb)</span>
+                <span class="asset-meta">~41 MB</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="checksum-drawer">
+            <span>STATUS</span>
+            <span class="checksum-hash">COMPILADO // PRONTO</span>
+            <button type="button" class="copy-btn" data-copy="https://github.com/Fuzzy-Z/voxel-download-page/releases">LINK</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       KEYBOARD SHORTCUTS & ERGONOMICS
+       ========================================================================= -->
+  <section class="section" id="atalhos">
+    <div class="container">
+      <div class="section-header">
+        <div class="eyebrow">PRODUTIVIDADE NO TECLADO</div>
+        <h2 class="section-title">Controle rápido sem sair do jogo ou do código.</h2>
+        <p class="section-desc">
+          Mute rápido, controle de microfone e navegação fluida por servidores com atalhos globais.
+        </p>
+      </div>
+
+      <div class="shortcuts-grid">
+        <div class="shortcut-card">
+          <span class="shortcut-action">Mutar / Desmutar Microfone</span>
+          <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>M</kbd></div>
+        </div>
+
+        <div class="shortcut-card">
+          <span class="shortcut-action">Desativar / Ativar Áudio (Deafen)</span>
+          <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></div>
+        </div>
+
+        <div class="shortcut-card">
+          <span class="shortcut-action">Alternar Compartilhamento de Tela</span>
+          <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></div>
+        </div>
+
+        <div class="shortcut-card">
+          <span class="shortcut-action">Pausar / Tocar Música na Sala</span>
+          <div class="shortcut-keys"><kbd>Alt</kbd> + <kbd>P</kbd></div>
+        </div>
+
+        <div class="shortcut-card">
+          <span class="shortcut-action">Abrir Configurações de Usuário</span>
+          <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>,</kbd></div>
+        </div>
+
+        <div class="shortcut-card">
+          <span class="shortcut-action">Gravar Clipe de Áudio/Vídeo</span>
+          <div class="shortcut-keys"><kbd>Ctrl</kbd> + <kbd>F12</kbd></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       CHANGELOG / RELEASES LEDGER
+       ========================================================================= -->
+  <section class="section" id="changelog">
+    <div class="container">
+      <div class="section-header">
+        <div class="eyebrow">HISTÓRICO DE ATUALIZAÇÕES</div>
+        <h2 class="section-title">Registro de Versões</h2>
+        <p class="section-desc">
+          O Voxel conta com sistema de autoupdate integrado para manter seu aplicativo sempre seguro e rápido.
+        </p>
+      </div>
+
+      <div class="ledger-container">
+        
+        <div class="ledger-entry">
+          <div class="ledger-header">
+            <div class="ledger-version">
+              <span class="version-name">v1.0.35</span>
+              <span class="badge-release latest">ÚLTIMA VERSÃO ESTÁVEL</span>
+            </div>
+            <span class="ledger-date">Hoje</span>
+          </div>
+
+          <ul class="ledger-items">
+            <li>
+              <span class="ledger-tag">[VOZ]</span>
+              <span>Refinamento na supressão de ruído no AudioContext e sincronização WebRTC contínua.</span>
+            </li>
+            <li>
+              <span class="ledger-tag">[UI]</span>
+              <span>Novo design monolítico e refinamento dos temas escuros e componentes tácteis.</span>
+            </li>
+            <li>
+              <span class="ledger-tag">[MÚSICA]</span>
+              <span>Otimização no buffer de reprodução de faixas e redução na latência de streaming.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="ledger-entry">
+          <div class="ledger-header">
+            <div class="ledger-version">
+              <span class="version-name">v1.0.34</span>
+              <span class="version-tag">STABLE</span>
+            </div>
+            <span class="ledger-date">Lançamento anterior</span>
+          </div>
+
+          <ul class="ledger-items">
+            <li>
+              <span class="ledger-tag">[SISTEMA]</span>
+              <span>Empacotamento ASAR ultracompacto e redução de 22% no consumo de memória em segundo plano.</span>
+            </li>
+            <li>
+              <span class="ledger-tag">[TELA]</span>
+              <span>Suporte aprimorado para captura de áudio de aplicativos no Windows 10/11.</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       FREQUENTLY ASKED QUESTIONS
+       ========================================================================= -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <div class="eyebrow">DÚVIDAS FREQUENTES</div>
+        <h2 class="section-title">Perguntas e Respostas</h2>
+      </div>
+
+      <div class="faq-grid">
+        <div class="faq-card">
+          <h3 class="faq-q">O Voxel é gratuito? Existe algum paywall?</h3>
+          <p class="faq-a">
+            O Voxel é 100% gratuito. Recursos como streaming a 60 FPS, taxa de bits de áudio em alta definição (384 kbps) e player de música integrado não exigem nenhuma assinatura paga.
+          </p>
+        </div>
+
+        <div class="faq-card">
+          <h3 class="faq-q">Preciso instalar ou posso usar a versão portátil?</h3>
+          <p class="faq-a">
+            Você pode optar pela versão portátil (`portable.exe`), que não requer instalação e roda diretamente de onde você salvá-la, ou pelo instalador clássico.
+          </p>
+        </div>
+
+        <div class="faq-card">
+          <h3 class="faq-q">Como funcionam as salas de voz e o player de música?</h3>
+          <p class="faq-a">
+            As chamadas de voz utilizam conexões de baixa latência com WebSockets e WebRTC. O player de música é integrado à interface do aplicativo, tocando sincronizado para todos no canal de voz.
+          </p>
+        </div>
+
+        <div class="faq-card">
+          <h3 class="faq-q">Como o aplicativo é atualizado?</h3>
+          <p class="faq-a">
+            O Voxel possui um sistema de atualização inteligente embutido. Quando uma nova versão é lançada, você recebe uma notificação discreta e a atualização é aplicada sem quebrar suas configurações.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       SITE FOOTER
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <img src="assets/icon.png" alt="Voxel Logo" width="24" height="24">
+            <span>VOXEL</span>
+          </div>
+          <p>
+            Plataforma sólida e crua de comunicação em tempo real. Voz cristalina, transmissão a 60 FPS e música integrada sem bloatware.
+          </p>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Plataformas</div>
+          <ul class="footer-col-links">
+            <li><a href="#download-win">Windows (x64/ARM)</a></li>
+            <li><a href="#download-mac">macOS (Universal)</a></li>
+            <li><a href="#download-linux">Linux (AppImage)</a></li>
+            <li><a href="#downloads">Todas as Versões</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Arquitetura</div>
+          <ul class="footer-col-links">
+            <li><a href="#audio-engine">Motor de Áudio Opus</a></li>
+            <li><a href="#recursos">Salas de Voz P2P</a></li>
+            <li><a href="#atalhos">Atalhos de Teclado</a></li>
+            <li><a href="#changelog">Registro de Mudanças</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Projeto</div>
+          <ul class="footer-col-links">
+            <li><a href="https://github.com/Fuzzy-Z/voxel-download-page" target="_blank" rel="noopener noreferrer">Repositório GitHub</a></li>
+            <li><a href="https://github.com/Fuzzy-Z/voxel-download-page/issues" target="_blank" rel="noopener noreferrer">Reportar Problema</a></li>
+            <li><a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer">Releases & Patches</a></li>
+            <li><a href="LICENSE">Licença MIT</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          <span>VOXEL // DESENVOLVIDO POR FUZZY-Z</span>
+        </div>
+        <div>
+          <span>VERSÃO ATIVA: v1.0.35</span>
+        </div>
+        <div>
+          <span>TODOS OS SISTEMAS OPERACIONAIS</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Core JavaScript Modules -->
+  <script src="scripts/voxel-canvas.js"></script>
+  <script src="scripts/main.js"></script>
+</body>
+</html>

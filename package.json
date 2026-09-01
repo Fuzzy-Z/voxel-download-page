@@ -1,0 +1,20 @@
+{
+  "name": "voxel-download-page",
+  "version": "1.4.2",
+  "description": "Landing page oficial para o Voxel - Motor volumétrico bruto, sólido e de alto desempenho.",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "voxel",
+    "3d",
+    "rendering",
+    "volumetric",
+    "local-first",
+    "engine"
+  ],
+  "author": "Fuzzy-Z",
+  "license": "MIT"
+}

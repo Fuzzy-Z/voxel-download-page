@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" fill="none">
+  <defs>
+    <linearGradient id="vTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#41536B" />
+      <stop offset="100%" stop-color="#334255" />
+    </linearGradient>
+    <linearGradient id="vLeft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#253346" />
+      <stop offset="100%" stop-color="#1E2938" />
+    </linearGradient>
+    <linearGradient id="vRight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A2433" />
+      <stop offset="100%" stop-color="#131B26" />
+    </linearGradient>
+  </defs>
+
+  <g stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    {/* Left Column Stack */}
+    <g transform="translate(155, 235)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(155, 207)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(155, 179)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+
+    {/* Middle Column */}
+    <g transform="translate(175, 247)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(175, 219)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(175, 191)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+
+    {/* Top Back Slope */}
+    <g transform="translate(175, 155)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(195, 143)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(215, 155)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+
+    {/* Front Bottom Tip */}
+    <g transform="translate(195, 271)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+
+    {/* Right Wing */}
+    <g transform="translate(215, 227)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+    <g transform="translate(215, 199)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+
+    {/* Floating Top Right Voxel */}
+    <g transform="translate(250, 175)">
+      <path d="M0 -22 L20 -10 L0 2 L-20 -10 Z" fill="url(#vTop)" />
+      <path d="M-20 -10 L0 2 L0 26 L-20 14 Z" fill="url(#vLeft)" />
+      <path d="M0 2 L20 -10 L20 14 L0 26 Z" fill="url(#vRight)" />
+    </g>
+  </g>
+</svg>
