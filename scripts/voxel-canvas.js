@@ -1,7 +1,6 @@
 /**
  * VOXEL // INTERACTIVE 3D ENGINE
- * Real-time 3D camera with free orbit, dynamic lighting and 100% floor-grid alignment.
- * Zero external libraries, zero bloat, mathematically unified 3D pipeline.
+ * Free Orbit 3D Camera with upright orientation, dynamic lighting, and pixel-perfect floor alignment.
  */
 
 class VoxelCanvasEngine {
@@ -10,9 +9,9 @@ class VoxelCanvasEngine {
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
 
-    // 3D Voxel Unit Scale (pixels per 1.0 unit in 3D world)
-    this.scale = 22;
-    this.gridRadius = 3; // -3 to +3 (7x7 floor grid)
+    // 3D Isometric Scale Factors
+    this.scale = 22; // 22 pixels per 1.0 unit
+    this.gridRadius = 3; // -3 to +3 floor grid
 
     this.voxels = new Map(); // key "x,y,z" -> { x, y, z, mat }
 
@@ -21,7 +20,7 @@ class VoxelCanvasEngine {
       slate: {
         name: 'Slate',
         color: [71, 85, 105], // #475569
-        border: 'rgba(255, 255, 255, 0.12)'
+        border: 'rgba(255, 255, 255, 0.14)'
       },
       obsidian: {
         name: 'Basalt',
@@ -31,12 +30,12 @@ class VoxelCanvasEngine {
       brass: {
         name: 'Brass',
         color: [212, 163, 115], // #d4a373
-        border: 'rgba(250, 237, 205, 0.25)'
+        border: 'rgba(250, 237, 205, 0.28)'
       },
       concrete: {
         name: 'Concrete',
         color: [148, 163, 184], // #94a3b8
-        border: 'rgba(255, 255, 255, 0.15)'
+        border: 'rgba(255, 255, 255, 0.16)'
       }
     };
 
@@ -45,20 +44,22 @@ class VoxelCanvasEngine {
     this.wireframeMode = false;
     this.autoRotate = false;
 
-    // Free 3D Camera Angles (Yaw, Pitch)
-    this.yaw = Math.PI / 4 + 0.1; // ~45 deg
+    // Camera Angles:
+    // yaw: horizontal orbit around vertical Z axis (radians)
+    // pitch: elevation angle above ground horizon (radians)
+    this.yaw = Math.PI / 4 + 0.1; // ~45 deg classic isometric
     this.pitch = 0.58; // ~33 deg elevation
     this.panX = 0;
     this.panY = 0;
 
-    // Orbit Interaction State
+    // Interaction state
     this.isDragging = false;
     this.lastMouse = { x: 0, y: 0 };
     this.mouseMoved = false;
-    this.hover = null; // { isVoxel, x, y, z, normal, addPos }
+    this.hover = null;
 
-    // Light direction vector (normalized) in world space
-    this.lightDir = this.normalizeVector({ x: 0.4, y: -0.6, z: 0.8 });
+    // Directional light vector in world space (coming from top-left-front)
+    this.lightDir = this.normalizeVector({ x: 0.4, y: -0.6, z: 0.85 });
 
     // FPS
     this.lastTime = performance.now();
@@ -86,8 +87,9 @@ class VoxelCanvasEngine {
     this.canvas.height = this.height * dpr;
     this.ctx.scale(dpr, dpr);
 
+    // Center point on the canvas (ground plane sits at center + 40px)
     this.originX = this.width / 2 + this.panX;
-    this.originY = this.height / 2 + 35 + this.panY;
+    this.originY = this.height / 2 + 45 + this.panY;
   }
 
   bindEvents() {
@@ -97,7 +99,7 @@ class VoxelCanvasEngine {
     this.canvas.addEventListener('mouseleave', () => { if (!this.isDragging) this.hover = null; });
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Touch Support
+    // Touch Support for mobile
     this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
     this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
     this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
@@ -128,7 +130,7 @@ class VoxelCanvasEngine {
       });
     });
 
-    // Wireframe
+    // Wireframe Toggle
     const wireBtn = document.getElementById('toggleWireframe');
     if (wireBtn) {
       wireBtn.addEventListener('click', () => {
@@ -152,28 +154,25 @@ class VoxelCanvasEngine {
     return { x: v.x / len, y: v.y / len, z: v.z / len };
   }
 
-  // 3D to 2D Screen Projection
+  /**
+   * 3D to 2D Isometric Projection (Right-handed, +Z is UP)
+   */
   project(x, y, z) {
     const cosY = Math.cos(this.yaw);
     const sinY = Math.sin(this.yaw);
     const cosP = Math.cos(this.pitch);
     const sinP = Math.sin(this.pitch);
 
-    // 1. Rotate around Z (Yaw)
-    const x1 = x * cosY - y * sinY;
-    const y1 = x * sinY + y * cosY;
-    const z1 = z;
+    // 1. Horizontal Yaw Rotation around vertical Z axis
+    const xc = x * cosY - y * sinY;
+    const yc = x * sinY + y * cosY;
 
-    // 2. Rotate around X (Pitch / Elevation)
-    const x2 = x1;
-    const y2 = y1 * cosP - z1 * sinP;
-    const z2 = y1 * sinP + z1 * cosP; // Depth along camera axis
+    // 2. Pitch / Elevation Tilt (+Z is UPWARDS)
+    const sx = this.originX + xc * this.scale;
+    const sy = this.originY + (yc * sinP - z * cosP) * this.scale;
+    const depth = yc * cosP + z * sinP; // Distance along view direction
 
-    return {
-      sx: this.originX + x2 * this.scale,
-      sy: this.originY - y2 * this.scale,
-      depth: z2
-    };
+    return { sx, sy, depth };
   }
 
   setVoxel(x, y, z, mat) {
@@ -194,7 +193,7 @@ class VoxelCanvasEngine {
     this.clear();
 
     if (preset === 'monolith') {
-      // Authentic Voxel stepped cluster sitting perfectly on floor grid
+      // Voxel Stepped Cluster sitting solidly UPWARDS on floor grid
       // Ground foundation (z = 0)
       this.setVoxel(-1, -1, 0, 'obsidian');
       this.setVoxel(0, -1, 0, 'obsidian');
@@ -259,7 +258,8 @@ class VoxelCanvasEngine {
       }
 
       this.yaw += dx * 0.008;
-      this.pitch = Math.max(0.15, Math.min(1.25, this.pitch + dy * 0.005));
+      // Clamp pitch to keep camera above the floor
+      this.pitch = Math.max(0.18, Math.min(1.25, this.pitch + dy * 0.005));
       this.lastMouse = { x: e.clientX, y: e.clientY };
       this.hover = null;
     } else {
@@ -308,7 +308,7 @@ class VoxelCanvasEngine {
       }
 
       this.yaw += dx * 0.008;
-      this.pitch = Math.max(0.15, Math.min(1.25, this.pitch + dy * 0.005));
+      this.pitch = Math.max(0.18, Math.min(1.25, this.pitch + dy * 0.005));
       this.lastMouse = { x: touch.clientX, y: touch.clientY };
     }
   }
@@ -317,7 +317,7 @@ class VoxelCanvasEngine {
     this.isDragging = false;
   }
 
-  // Point in Polygon Test for precise face raycasting
+  // Point in Polygon Test
   pointInPoly(px, py, poly) {
     let inside = false;
     for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -332,7 +332,7 @@ class VoxelCanvasEngine {
   // Raycast all polygons (faces) from front to back
   updateHover(mx, my) {
     const polygons = this.generateScenePolygons();
-    // Sort from front-most (highest depth) to back-most
+    // Sort from front (highest depth) to back
     polygons.sort((a, b) => b.depth - a.depth);
 
     for (const poly of polygons) {
@@ -353,7 +353,6 @@ class VoxelCanvasEngine {
     const r = this.gridRadius;
     for (let x = -r; x <= r; x++) {
       for (let y = -r; y <= r; y++) {
-        // Floor tile corners: (x±0.5, y±0.5, 0)
         const p1 = this.project(x - 0.5, y - 0.5, 0);
         const p2 = this.project(x + 0.5, y - 0.5, 0);
         const p3 = this.project(x + 0.5, y + 0.5, 0);
@@ -399,18 +398,21 @@ class VoxelCanvasEngine {
 
     for (const v of this.voxels.values()) {
       for (const fd of faceDefs) {
-        // Compute Camera-Space Normal to test Backface Culling
+        // Compute Camera-Space Normal to test Backface Culling (towards viewer check)
         const nx = fd.normal.x * cosY - fd.normal.y * sinY;
         const ny = fd.normal.x * sinY + fd.normal.y * cosY;
-        const camNormalZ = ny * sinP + fd.normal.z * cosP;
+        const nz = fd.normal.z;
 
-        // If face points towards camera (camNormalZ > 0)
-        if (camNormalZ > 0.001) {
+        // Facing direction relative to camera
+        const viewNormal = - (ny * cosP + nz * sinP);
+
+        // If face is pointing towards camera (viewNormal < 0)
+        if (viewNormal < -0.001) {
           const rawVerts = fd.getVerts(v.x, v.y, v.z);
           const pts = rawVerts.map(pt => this.project(pt[0], pt[1], pt[2]));
           const depth = (pts[0].depth + pts[1].depth + pts[2].depth + pts[3].depth) / 4;
 
-          // Compute Light Shading (dot product with light vector)
+          // Compute Light Shading
           const dot = Math.max(0, fd.normal.x * this.lightDir.x + fd.normal.y * this.lightDir.y + fd.normal.z * this.lightDir.z);
           const lightFactor = 0.45 + 0.55 * dot; // Ambient + Diffuse
 
@@ -463,9 +465,9 @@ class VoxelCanvasEngine {
   render() {
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    // 1. Generate & Sort all 3D Polygons (Back to Front)
+    // 1. Generate & Sort all 3D Polygons (Back to Front: lowest depth first)
     const polys = this.generateScenePolygons();
-    polys.sort((a, b) => a.depth - b.depth); // Painter's Algorithm
+    polys.sort((a, b) => a.depth - b.depth);
 
     // 2. Draw Floor Grid & Voxels
     for (const poly of polys) {
@@ -523,7 +525,7 @@ class VoxelCanvasEngine {
       this.ctx.lineWidth = 1.1;
       this.ctx.stroke();
     } else {
-      // Calculate shaded color with light factor
+      // Shaded color with light factor
       const r = Math.round(mat.color[0] * poly.lightFactor);
       const g = Math.round(mat.color[1] * poly.lightFactor);
       const b = Math.round(mat.color[2] * poly.lightFactor);
@@ -539,7 +541,6 @@ class VoxelCanvasEngine {
   }
 
   drawGhostVoxel(x, y, z, matName) {
-    const mat = this.materials[matName] || this.materials.slate;
     const pts = [
       this.project(x - 0.5, y - 0.5, z),
       this.project(x + 0.5, y - 0.5, z),
@@ -552,8 +553,8 @@ class VoxelCanvasEngine {
     ];
 
     this.ctx.save();
-    this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.8)';
-    this.ctx.fillStyle = 'rgba(212, 163, 115, 0.15)';
+    this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.85)';
+    this.ctx.fillStyle = 'rgba(212, 163, 115, 0.18)';
     this.ctx.lineWidth = 1.2;
     this.ctx.setLineDash([3, 2]);
 
