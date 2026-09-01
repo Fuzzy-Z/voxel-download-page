@@ -11,8 +11,8 @@ class VoxelCanvasEngine {
     this.ctx = this.canvas.getContext('2d');
     
     // Grid Configuration
-    this.gridSize = 10;
-    this.tileSize = 17;
+    this.gridSize = 8;
+    this.tileSize = 20;
     this.voxels = new Map(); // key "x,y,z" -> { mat: 'slate' }
     
     // Materials Definition (Solid tactile colors)
@@ -26,10 +26,10 @@ class VoxelCanvasEngine {
       },
       obsidian: {
         name: 'Basalt',
-        top: '#1e293b',
-        left: '#0f172a',
-        right: '#090d16',
-        accent: '#334155'
+        top: '#242e3d',
+        left: '#151c27',
+        right: '#0d131c',
+        accent: '#38475c'
       },
       brass: {
         name: 'Brass',
@@ -50,12 +50,12 @@ class VoxelCanvasEngine {
     this.activeMaterial = 'slate';
     this.activeTool = 'add';
     this.wireframeMode = false;
-    this.autoRotate = true;
+    this.autoRotate = false; // Disabled by default for stability
 
-    // Camera & View Transform
-    this.angle = 0.85;
-    this.pitch = 0.58;
-    this.zoom = 1.05;
+    // Fixed Isometric Camera View
+    this.angle = 0.65;
+    this.pitch = 0.60;
+    this.zoom = 1.0;
     this.panX = 0;
     this.panY = 0;
 
@@ -98,7 +98,7 @@ class VoxelCanvasEngine {
     this.ctx.scale(dpr, dpr);
     
     this.originX = this.width / 2 + this.panX;
-    this.originY = this.height / 2 + 30 + this.panY;
+    this.originY = this.height / 2 + 40 + this.panY;
   }
 
   bindEvents() {
@@ -175,35 +175,30 @@ class VoxelCanvasEngine {
     this.clear();
 
     if (preset === 'monolith') {
-      // Recreates the iconic Voxel stepped cluster logo in 3D
-      // Left stack
+      // Recreates the authentic solid Voxel geometric cluster
+      // Ground foundation
+      this.setVoxel(-1, -1, 0, 'obsidian');
+      this.setVoxel(0, -1, 0, 'obsidian');
+      this.setVoxel(1, -1, 0, 'obsidian');
       this.setVoxel(-1, 0, 0, 'obsidian');
-      this.setVoxel(-1, 0, 1, 'slate');
-      this.setVoxel(-1, 0, 2, 'concrete');
-
-      // Center stack
       this.setVoxel(0, 0, 0, 'obsidian');
-      this.setVoxel(0, 0, 1, 'slate');
-      this.setVoxel(0, 0, 2, 'slate');
-      this.setVoxel(0, 0, 3, 'concrete');
-
-      // Right stack
       this.setVoxel(1, 0, 0, 'obsidian');
+
+      // Tier 1
+      this.setVoxel(-1, 0, 1, 'slate');
+      this.setVoxel(0, 0, 1, 'slate');
       this.setVoxel(1, 0, 1, 'slate');
+      this.setVoxel(0, -1, 1, 'slate');
+
+      // Tier 2 (Central column)
+      this.setVoxel(-1, 0, 2, 'concrete');
+      this.setVoxel(0, 0, 2, 'slate');
       this.setVoxel(1, 0, 2, 'slate');
 
-      // Forward step
-      this.setVoxel(0, 1, 0, 'obsidian');
-      this.setVoxel(0, 1, 1, 'slate');
-
-      // Back crown
-      this.setVoxel(0, -1, 1, 'obsidian');
-      this.setVoxel(0, -1, 2, 'slate');
-
-      // Floating accent voxel
-      this.setVoxel(2, -1, 3, 'brass');
-      this.setVoxel(-1, 1, 0, 'slate');
-      this.setVoxel(1, 1, 0, 'slate');
+      // Crown
+      this.setVoxel(0, 0, 3, 'concrete');
+      this.setVoxel(0, -1, 2, 'brass');
+      this.setVoxel(1, 0, 3, 'brass');
     } else if (preset === 'arch') {
       // Architectural Portal
       for (let z = 0; z <= 4; z++) {
@@ -211,7 +206,7 @@ class VoxelCanvasEngine {
         this.setVoxel(2, 0, z, 'obsidian');
       }
       this.setVoxel(-1, 0, 4, 'slate');
-      this.setVoxel(0, 0, 5, 'brass');
+      this.setVoxel(0, 0, 4, 'brass');
       this.setVoxel(1, 0, 4, 'slate');
       this.setVoxel(0, 0, 0, 'concrete');
     } else if (preset === 'slab') {
@@ -263,8 +258,8 @@ class VoxelCanvasEngine {
         this.mouseMoved = true;
       }
 
-      this.angle += dx * 0.008;
-      this.pitch = Math.max(0.2, Math.min(1.2, this.pitch + dy * 0.003));
+      this.angle += dx * 0.007;
+      this.pitch = Math.max(0.3, Math.min(1.0, this.pitch + dy * 0.003));
       this.lastMouse = { x: e.clientX, y: e.clientY };
     } else {
       this.updateHover(mouseX, mouseY);
@@ -312,8 +307,8 @@ class VoxelCanvasEngine {
         this.mouseMoved = true;
       }
 
-      this.angle += dx * 0.008;
-      this.pitch = Math.max(0.2, Math.min(1.2, this.pitch + dy * 0.003));
+      this.angle += dx * 0.007;
+      this.pitch = Math.max(0.3, Math.min(1.0, this.pitch + dy * 0.003));
       this.lastMouse = { x: touch.clientX, y: touch.clientY };
     }
   }
@@ -339,7 +334,7 @@ class VoxelCanvasEngine {
     for (const v of voxelList) {
       const p = this.project(v.x, v.y, v.z);
       const dist = Math.hypot(p.x - mouseX, p.y - mouseY);
-      if (dist < s * 1.3) {
+      if (dist < s * 1.2) {
         const dy = mouseY - p.y;
         let addPos = { x: v.x, y: v.y, z: v.z + 1 };
         if (dy > s * 0.2) {
@@ -366,7 +361,7 @@ class VoxelCanvasEngine {
     }
 
     if (this.autoRotate && !this.isDragging) {
-      this.angle += dt * 0.22;
+      this.angle += dt * 0.20;
     }
 
     this.render();
@@ -404,7 +399,7 @@ class VoxelCanvasEngine {
 
   drawGridBase() {
     const half = 3;
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     this.ctx.lineWidth = 1;
 
     for (let x = -half; x <= half; x++) {
@@ -439,7 +434,7 @@ class VoxelCanvasEngine {
     this.ctx.save();
 
     if (isGhost) {
-      this.ctx.globalAlpha = 0.4;
+      this.ctx.globalAlpha = 0.45;
       this.ctx.setLineDash([2, 2]);
     }
 
@@ -473,7 +468,7 @@ class VoxelCanvasEngine {
       this.ctx.lineTo(cx + w, cy + s);
       this.ctx.stroke();
     } else {
-      // Solid Shaded Isometric Cube with crisp edges (matching Voxel branding)
+      // Solid Shaded Isometric Cube with clean tactile edges
 
       // Top Face
       this.ctx.fillStyle = mat.top;
@@ -486,7 +481,7 @@ class VoxelCanvasEngine {
       this.ctx.fill();
 
       // Contour stroke
-      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
       this.ctx.lineWidth = 0.8;
       this.ctx.stroke();
 
@@ -500,7 +495,7 @@ class VoxelCanvasEngine {
       this.ctx.closePath();
       this.ctx.fill();
 
-      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
       this.ctx.stroke();
 
       // Right Face
@@ -513,7 +508,7 @@ class VoxelCanvasEngine {
       this.ctx.closePath();
       this.ctx.fill();
 
-      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.42)';
       this.ctx.stroke();
     }
 
