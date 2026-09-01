@@ -154,7 +154,13 @@
         <div class="viewport-footer">
           <div class="material-selector">
             <span class="mat-label">Matéria:</span>
-            <button type="button" class="mat-pill selected" data-mat="slate">
+            <button type="button" class="mat-pill selected" data-mat="grass">
+              <span class="mat-color-dot" style="background: #5b8c3a;"></span> Grama
+            </button>
+            <button type="button" class="mat-pill" data-mat="dirt">
+              <span class="mat-color-dot" style="background: #866043;"></span> Terra
+            </button>
+            <button type="button" class="mat-pill" data-mat="slate">
               <span class="mat-color-dot" style="background: #64748b;"></span> Ardósia
             </button>
             <button type="button" class="mat-pill" data-mat="obsidian">
@@ -169,10 +175,8 @@
           </div>
 
           <div class="preset-selector">
-            <span class="mat-label">Modelos:</span>
-            <button type="button" class="tool-btn" data-preset="monolith" title="Carregar Logotipo Voxel [1]">1. Logo Voxel</button>
-            <button type="button" class="tool-btn" data-preset="arch" title="Carregar Portal [2]">2. Portal</button>
-            <button type="button" class="tool-btn" data-preset="slab" title="Carregar Base Plana [3]">3. Plano</button>
+            <button type="button" class="tool-btn" id="resetCanvas" title="Restaurar Bloco Central [Tecla C]">Resetar [C]</button>
+            <button type="button" class="tool-btn" id="clearCanvas" title="Limpar Grade [Tecla X]">Limpar [X]</button>
           </div>
         </div>
 
@@ -440,29 +444,29 @@
                 <span></span>
                 <span>macOS</span>
               </div>
-              <span class="platform-arch-pill">Universal</span>
+              <span class="platform-arch-pill badge-in-progress">EM ANDAMENTO</span>
             </div>
 
             <p style="color: var(--text-muted); font-size: 0.88rem;">
-              Otimizado para chips Apple Silicon (M1, M2, M3, M4) e Macs com processador Intel x86_64.
+              Versão nativa para Apple Silicon (M1, M2, M3, M4) e Intel x86_64 em fase de empacotamento.
             </p>
 
             <div class="platform-file-list">
-              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+              <div class="download-asset-item in-progress">
                 <span>Imagem de Disco (.dmg)</span>
-                <span class="asset-meta">~40 MB</span>
-              </a>
-              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span class="asset-meta">EM ANDAMENTO</span>
+              </div>
+              <div class="download-asset-item in-progress">
                 <span>Arquivo Comprimido (.zip)</span>
-                <span class="asset-meta">~38 MB</span>
-              </a>
+                <span class="asset-meta">EM ANDAMENTO</span>
+              </div>
             </div>
           </div>
 
           <div class="checksum-drawer">
             <span>STATUS</span>
-            <span class="checksum-hash">COMPILADO // PRONTO</span>
-            <button type="button" class="copy-btn" data-copy="https://github.com/Fuzzy-Z/voxel-download-page/releases">LINK</button>
+            <span class="checksum-hash" style="color: var(--mat-brass);">EM ANDAMENTO // BREVE</span>
+            <span class="copy-btn" style="opacity: 0.5;">AGUARDE</span>
           </div>
         </div>
 
@@ -474,29 +478,29 @@
                 <span>🐧</span>
                 <span>Linux</span>
               </div>
-              <span class="platform-arch-pill">x86_64</span>
+              <span class="platform-arch-pill badge-in-progress">EM ANDAMENTO</span>
             </div>
 
             <p style="color: var(--text-muted); font-size: 0.88rem;">
-              Pacote universal AppImage e binários Debian/Ubuntu para compatibilidade com qualquer distribuição moderna.
+              Pacotes AppImage e Debian/Ubuntu em fase de testes e compatibilidade.
             </p>
 
             <div class="platform-file-list">
-              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+              <div class="download-asset-item in-progress">
                 <span>Pacote AppImage</span>
-                <span class="asset-meta">~44 MB</span>
-              </a>
-              <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" target="_blank" rel="noopener noreferrer" class="download-asset-item">
+                <span class="asset-meta">EM ANDAMENTO</span>
+              </div>
+              <div class="download-asset-item in-progress">
                 <span>Debian / Ubuntu (.deb)</span>
-                <span class="asset-meta">~41 MB</span>
-              </a>
+                <span class="asset-meta">EM ANDAMENTO</span>
+              </div>
             </div>
           </div>
 
           <div class="checksum-drawer">
             <span>STATUS</span>
-            <span class="checksum-hash">COMPILADO // PRONTO</span>
-            <button type="button" class="copy-btn" data-copy="https://github.com/Fuzzy-Z/voxel-download-page/releases">LINK</button>
+            <span class="checksum-hash" style="color: var(--mat-brass);">EM ANDAMENTO // BREVE</span>
+            <span class="copy-btn" style="opacity: 0.5;">AGUARDE</span>
           </div>
         </div>
 

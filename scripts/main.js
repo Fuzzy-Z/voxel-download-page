@@ -61,7 +61,7 @@ function detectUserPlatform() {
 
   if (titleEl && subEl && iconEl && mainBtn) {
     titleEl.textContent = `Baixar para ${osName}`;
-    subEl.textContent = `v1.4.2 (${arch}) • ${size}`;
+    subEl.textContent = `v1.0.35 (${arch}) • ${size}`;
     iconEl.textContent = osIcon;
     mainBtn.href = `#${targetId}`;
   }
@@ -144,15 +144,12 @@ function setupKeyboardShortcuts() {
     } else if (key === 'r') {
       const rotateBtn = document.getElementById('toggleRotate');
       if (rotateBtn) rotateBtn.click();
-    } else if (key === '1') {
-      const p1 = document.querySelector('[data-preset="monolith"]');
-      if (p1) p1.click();
-    } else if (key === '2') {
-      const p2 = document.querySelector('[data-preset="arch"]');
-      if (p2) p2.click();
-    } else if (key === '3') {
-      const p3 = document.querySelector('[data-preset="slab"]');
-      if (p3) p3.click();
+    } else if (key === 'c') {
+      const resetBtn = document.getElementById('resetCanvas');
+      if (resetBtn) resetBtn.click();
+    } else if (key === 'x') {
+      const clearBtn = document.getElementById('clearCanvas');
+      if (clearBtn) clearBtn.click();
     }
   });
 }

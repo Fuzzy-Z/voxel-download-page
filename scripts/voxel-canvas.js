@@ -1,6 +1,6 @@
 /**
  * VOXEL // INTERACTIVE 3D ENGINE
- * Free Orbit 3D Camera with upright orientation, dynamic lighting, and pixel-perfect floor alignment.
+ * Free Orbit 3D Camera, Minecraft block model, and open sandbox builder.
  */
 
 class VoxelCanvasEngine {
@@ -10,45 +10,59 @@ class VoxelCanvasEngine {
     this.ctx = this.canvas.getContext('2d');
 
     // 3D Isometric Scale Factors
-    this.scale = 22; // 22 pixels per 1.0 unit
-    this.gridRadius = 3; // -3 to +3 floor grid
+    this.scale = 22;
+    this.gridRadius = 3; // 7x7 floor grid
 
     this.voxels = new Map(); // key "x,y,z" -> { x, y, z, mat }
 
-    // Raw Material Palette
+    // Materials Palette (Including Minecraft Grass / Dirt + Raw Materials)
     this.materials = {
+      grass: {
+        name: 'Grama',
+        topColor: [91, 140, 58],   // Minecraft grass green
+        sideColor: [134, 96, 67],  // Minecraft dirt brown
+        border: 'rgba(255, 255, 255, 0.15)'
+      },
+      dirt: {
+        name: 'Terra',
+        topColor: [134, 96, 67],
+        sideColor: [110, 78, 54],
+        border: 'rgba(255, 255, 255, 0.12)'
+      },
       slate: {
-        name: 'Slate',
-        color: [71, 85, 105], // #475569
+        name: 'Ardósia',
+        topColor: [71, 85, 105],
+        sideColor: [51, 65, 85],
         border: 'rgba(255, 255, 255, 0.14)'
       },
       obsidian: {
-        name: 'Basalt',
-        color: [36, 46, 61], // #242e3d
+        name: 'Basalto',
+        topColor: [36, 46, 61],
+        sideColor: [21, 28, 39],
         border: 'rgba(255, 255, 255, 0.10)'
       },
       brass: {
-        name: 'Brass',
-        color: [212, 163, 115], // #d4a373
+        name: 'Latão',
+        topColor: [212, 163, 115],
+        sideColor: [176, 137, 104],
         border: 'rgba(250, 237, 205, 0.28)'
       },
       concrete: {
-        name: 'Concrete',
-        color: [148, 163, 184], // #94a3b8
+        name: 'Concreto',
+        topColor: [148, 163, 184],
+        sideColor: [100, 116, 139],
         border: 'rgba(255, 255, 255, 0.16)'
       }
     };
 
-    this.activeMaterial = 'slate';
+    this.activeMaterial = 'grass';
     this.activeTool = 'add';
     this.wireframeMode = false;
     this.autoRotate = false;
 
-    // Camera Angles:
-    // yaw: horizontal orbit around vertical Z axis (radians)
-    // pitch: elevation angle above ground horizon (radians)
-    this.yaw = Math.PI / 4 + 0.1; // ~45 deg classic isometric
-    this.pitch = 0.58; // ~33 deg elevation
+    // Camera Angles
+    this.yaw = Math.PI / 4 + 0.1;
+    this.pitch = 0.58;
     this.panX = 0;
     this.panY = 0;
 
@@ -58,7 +72,7 @@ class VoxelCanvasEngine {
     this.mouseMoved = false;
     this.hover = null;
 
-    // Directional light vector in world space (coming from top-left-front)
+    // Directional light vector
     this.lightDir = this.normalizeVector({ x: 0.4, y: -0.6, z: 0.85 });
 
     // FPS
@@ -73,7 +87,10 @@ class VoxelCanvasEngine {
     this.resize();
     window.addEventListener('resize', () => this.resize());
     this.bindEvents();
-    this.loadPreset('monolith');
+    
+    // Start with a single Minecraft block in the center
+    this.resetToSingleBlock();
+
     requestAnimationFrame((t) => this.renderLoop(t));
   }
 
@@ -87,7 +104,6 @@ class VoxelCanvasEngine {
     this.canvas.height = this.height * dpr;
     this.ctx.scale(dpr, dpr);
 
-    // Center point on the canvas (ground plane sits at center + 40px)
     this.originX = this.width / 2 + this.panX;
     this.originY = this.height / 2 + 45 + this.panY;
   }
@@ -99,18 +115,21 @@ class VoxelCanvasEngine {
     this.canvas.addEventListener('mouseleave', () => { if (!this.isDragging) this.hover = null; });
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Touch Support for mobile
+    // Touch Support
     this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
     this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
     this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
 
-    // Presets
-    document.querySelectorAll('[data-preset]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const p = e.currentTarget.getAttribute('data-preset');
-        this.loadPreset(p);
-      });
-    });
+    // Reset & Clear buttons
+    const resetBtn = document.getElementById('resetCanvas');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => this.resetToSingleBlock());
+    }
+
+    const clearBtn = document.getElementById('clearCanvas');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => this.clear());
+    }
 
     // Tools
     document.querySelectorAll('[data-tool]').forEach(btn => {
@@ -155,7 +174,7 @@ class VoxelCanvasEngine {
   }
 
   /**
-   * 3D to 2D Isometric Projection (Right-handed, +Z is UP)
+   * 3D to 2D Isometric Projection (+Z is UP)
    */
   project(x, y, z) {
     const cosY = Math.cos(this.yaw);
@@ -163,14 +182,12 @@ class VoxelCanvasEngine {
     const cosP = Math.cos(this.pitch);
     const sinP = Math.sin(this.pitch);
 
-    // 1. Horizontal Yaw Rotation around vertical Z axis
     const xc = x * cosY - y * sinY;
     const yc = x * sinY + y * cosY;
 
-    // 2. Pitch / Elevation Tilt (+Z is UPWARDS)
     const sx = this.originX + xc * this.scale;
     const sy = this.originY + (yc * sinP - z * cosP) * this.scale;
-    const depth = yc * cosP + z * sinP; // Distance along view direction
+    const depth = yc * cosP + z * sinP;
 
     return { sx, sy, depth };
   }
@@ -189,55 +206,12 @@ class VoxelCanvasEngine {
     this.voxels.clear();
   }
 
-  loadPreset(preset) {
+  resetToSingleBlock() {
     this.clear();
-
-    if (preset === 'monolith') {
-      // Voxel Stepped Cluster sitting solidly UPWARDS on floor grid
-      // Ground foundation (z = 0)
-      this.setVoxel(-1, -1, 0, 'obsidian');
-      this.setVoxel(0, -1, 0, 'obsidian');
-      this.setVoxel(1, -1, 0, 'obsidian');
-      this.setVoxel(-1, 0, 0, 'obsidian');
-      this.setVoxel(0, 0, 0, 'obsidian');
-      this.setVoxel(1, 0, 0, 'obsidian');
-      this.setVoxel(0, 1, 0, 'obsidian');
-
-      // Tier 1 (z = 1)
-      this.setVoxel(-1, 0, 1, 'slate');
-      this.setVoxel(0, 0, 1, 'slate');
-      this.setVoxel(1, 0, 1, 'slate');
-      this.setVoxel(0, -1, 1, 'slate');
-
-      // Tier 2 (z = 2)
-      this.setVoxel(-1, 0, 2, 'concrete');
-      this.setVoxel(0, 0, 2, 'slate');
-      this.setVoxel(1, 0, 2, 'slate');
-
-      // Tier 3 Spire & Brass Accent (z = 3)
-      this.setVoxel(0, 0, 3, 'concrete');
-      this.setVoxel(1, 0, 3, 'brass');
-    } else if (preset === 'arch') {
-      // Portal Preset
-      for (let z = 0; z <= 3; z++) {
-        this.setVoxel(-1, 0, z, 'obsidian');
-        this.setVoxel(1, 0, z, 'obsidian');
-      }
-      this.setVoxel(-1, 0, 4, 'slate');
-      this.setVoxel(0, 0, 4, 'brass');
-      this.setVoxel(1, 0, 4, 'slate');
-      this.setVoxel(0, 0, 0, 'concrete');
-    } else if (preset === 'slab') {
-      // Pure 3x3 base slab
-      for (let x = -1; x <= 1; x++) {
-        for (let y = -1; y <= 1; y++) {
-          this.setVoxel(x, y, 0, 'slate');
-        }
-      }
-    }
+    // A single Minecraft block sitting proudly in the center (0,0,0)
+    this.setVoxel(0, 0, 0, 'grass');
   }
 
-  // Mouse & Touch Camera Orbit Controls
   onMouseDown(e) {
     this.isDragging = true;
     this.mouseMoved = false;
@@ -258,7 +232,6 @@ class VoxelCanvasEngine {
       }
 
       this.yaw += dx * 0.008;
-      // Clamp pitch to keep camera above the floor
       this.pitch = Math.max(0.18, Math.min(1.25, this.pitch + dy * 0.005));
       this.lastMouse = { x: e.clientX, y: e.clientY };
       this.hover = null;
@@ -317,7 +290,6 @@ class VoxelCanvasEngine {
     this.isDragging = false;
   }
 
-  // Point in Polygon Test
   pointInPoly(px, py, poly) {
     let inside = false;
     for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -329,10 +301,8 @@ class VoxelCanvasEngine {
     return inside;
   }
 
-  // Raycast all polygons (faces) from front to back
   updateHover(mx, my) {
     const polygons = this.generateScenePolygons();
-    // Sort from front (highest depth) to back
     polygons.sort((a, b) => b.depth - a.depth);
 
     for (const poly of polygons) {
@@ -345,11 +315,10 @@ class VoxelCanvasEngine {
     this.hover = null;
   }
 
-  // Generates 3D quad polygons for all visible faces of voxels and floor grid
   generateScenePolygons() {
     const polys = [];
 
-    // 1. Floor Grid Tiles (Sitting at Z = 0)
+    // 1. Floor Grid (Sitting at Z = 0)
     const r = this.gridRadius;
     for (let x = -r; x <= r; x++) {
       for (let y = -r; y <= r; y++) {
@@ -375,20 +344,14 @@ class VoxelCanvasEngine {
       }
     }
 
-    // 2. Voxel Cube Faces (6 faces per cube)
+    // 2. Voxel Faces
     const faceDefs = [
-      // Top (+Z)
-      { normal: { x: 0, y: 0, z: 1 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z+1], [x+0.5, y-0.5, z+1], [x+0.5, y+0.5, z+1], [x-0.5, y+0.5, z+1] ] },
-      // Bottom (-Z)
-      { normal: { x: 0, y: 0, z: -1 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y+0.5, z], [x+0.5, y+0.5, z], [x+0.5, y-0.5, z] ] },
-      // Front (+Y)
-      { normal: { x: 0, y: 1, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y+0.5, z], [x+0.5, y+0.5, z], [x+0.5, y+0.5, z+1], [x-0.5, y+0.5, z+1] ] },
-      // Back (-Y)
-      { normal: { x: 0, y: -1, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y-0.5, z+1], [x+0.5, y-0.5, z+1], [x+0.5, y-0.5, z] ] },
-      // Right (+X)
-      { normal: { x: 1, y: 0, z: 0 }, getVerts: (x,y,z) => [ [x+0.5, y-0.5, z], [x+0.5, y+0.5, z], [x+0.5, y+0.5, z+1], [x+0.5, y-0.5, z+1] ] },
-      // Left (-X)
-      { normal: { x: -1, y: 0, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y-0.5, z+1], [x-0.5, y+0.5, z+1], [x-0.5, y+0.5, z] ] }
+      { isTop: true, normal: { x: 0, y: 0, z: 1 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z+1], [x+0.5, y-0.5, z+1], [x+0.5, y+0.5, z+1], [x-0.5, y+0.5, z+1] ] },
+      { isTop: false, normal: { x: 0, y: 0, z: -1 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y+0.5, z], [x+0.5, y+0.5, z], [x+0.5, y-0.5, z] ] },
+      { isTop: false, normal: { x: 0, y: 1, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y+0.5, z], [x+0.5, y+0.5, z], [x+0.5, y+0.5, z+1], [x-0.5, y+0.5, z+1] ] },
+      { isTop: false, normal: { x: 0, y: -1, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y-0.5, z+1], [x+0.5, y-0.5, z+1], [x+0.5, y-0.5, z] ] },
+      { isTop: false, normal: { x: 1, y: 0, z: 0 }, getVerts: (x,y,z) => [ [x+0.5, y-0.5, z], [x+0.5, y+0.5, z], [x+0.5, y+0.5, z+1], [x+0.5, y-0.5, z+1] ] },
+      { isTop: false, normal: { x: -1, y: 0, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y-0.5, z+1], [x-0.5, y+0.5, z+1], [x-0.5, y+0.5, z] ] }
     ];
 
     const cosY = Math.cos(this.yaw);
@@ -398,28 +361,25 @@ class VoxelCanvasEngine {
 
     for (const v of this.voxels.values()) {
       for (const fd of faceDefs) {
-        // Compute Camera-Space Normal to test Backface Culling (towards viewer check)
         const nx = fd.normal.x * cosY - fd.normal.y * sinY;
         const ny = fd.normal.x * sinY + fd.normal.y * cosY;
         const nz = fd.normal.z;
 
-        // Facing direction relative to camera
         const viewNormal = - (ny * cosP + nz * sinP);
 
-        // If face is pointing towards camera (viewNormal < 0)
         if (viewNormal < -0.001) {
           const rawVerts = fd.getVerts(v.x, v.y, v.z);
           const pts = rawVerts.map(pt => this.project(pt[0], pt[1], pt[2]));
           const depth = (pts[0].depth + pts[1].depth + pts[2].depth + pts[3].depth) / 4;
 
-          // Compute Light Shading
           const dot = Math.max(0, fd.normal.x * this.lightDir.x + fd.normal.y * this.lightDir.y + fd.normal.z * this.lightDir.z);
-          const lightFactor = 0.45 + 0.55 * dot; // Ambient + Diffuse
+          const lightFactor = 0.45 + 0.55 * dot;
 
           polys.push({
             type: 'voxel',
             x: v.x, y: v.y, z: v.z,
             mat: v.mat,
+            isTop: fd.isTop,
             normal: fd.normal,
             depth,
             points: pts,
@@ -465,7 +425,7 @@ class VoxelCanvasEngine {
   render() {
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    // 1. Generate & Sort all 3D Polygons (Back to Front: lowest depth first)
+    // 1. Generate & Sort all 3D Polygons (Back to Front)
     const polys = this.generateScenePolygons();
     polys.sort((a, b) => a.depth - b.depth);
 
@@ -510,7 +470,7 @@ class VoxelCanvasEngine {
   }
 
   drawVoxelFace(poly) {
-    const mat = this.materials[poly.mat] || this.materials.slate;
+    const mat = this.materials[poly.mat] || this.materials.grass;
     const pts = poly.points;
 
     this.ctx.beginPath();
@@ -525,15 +485,16 @@ class VoxelCanvasEngine {
       this.ctx.lineWidth = 1.1;
       this.ctx.stroke();
     } else {
-      // Shaded color with light factor
-      const r = Math.round(mat.color[0] * poly.lightFactor);
-      const g = Math.round(mat.color[1] * poly.lightFactor);
-      const b = Math.round(mat.color[2] * poly.lightFactor);
+      // Pick top vs side color for Minecraft grass effect
+      const baseColor = poly.isTop ? mat.topColor : mat.sideColor;
+
+      const r = Math.round(baseColor[0] * poly.lightFactor);
+      const g = Math.round(baseColor[1] * poly.lightFactor);
+      const b = Math.round(baseColor[2] * poly.lightFactor);
 
       this.ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
       this.ctx.fill();
 
-      // Subtle edge bevel stroke
       this.ctx.strokeStyle = mat.border || 'rgba(255, 255, 255, 0.12)';
       this.ctx.lineWidth = 0.75;
       this.ctx.stroke();
