@@ -1,7 +1,7 @@
 /**
- * VOXEL // INTERACTIVE ISOMETRIC 3D ENGINE
- * Pure mathematical isometric projection aligned 100% to floor grid.
- * Zero jitter, zero floating, pixel-perfect alignment.
+ * VOXEL // INTERACTIVE 3D ENGINE
+ * Real-time 3D camera with free orbit, dynamic lighting and 100% floor-grid alignment.
+ * Zero external libraries, zero bloat, mathematically unified 3D pipeline.
  */
 
 class VoxelCanvasEngine {
@@ -10,60 +10,57 @@ class VoxelCanvasEngine {
     if (!this.canvas) return;
     this.ctx = this.canvas.getContext('2d');
 
-    // Isometric Projection Geometry Constants
-    this.tileW = 36; // Diamond width (px)
-    this.tileH = 20; // Diamond height (px)
-    this.tileD = 22; // Voxel vertical extrusion height (px)
+    // 3D Voxel Unit Scale (pixels per 1.0 unit in 3D world)
+    this.scale = 22;
     this.gridRadius = 3; // -3 to +3 (7x7 floor grid)
 
     this.voxels = new Map(); // key "x,y,z" -> { x, y, z, mat }
 
-    // Color/Material Themes (Solid, Raw, Tactile)
+    // Raw Material Palette
     this.materials = {
       slate: {
         name: 'Slate',
-        top: '#475569',
-        left: '#334155',
-        right: '#1e293b',
-        border: 'rgba(255, 255, 255, 0.15)'
+        color: [71, 85, 105], // #475569
+        border: 'rgba(255, 255, 255, 0.12)'
       },
       obsidian: {
         name: 'Basalt',
-        top: '#242e3d',
-        left: '#151c27',
-        right: '#0b1017',
-        border: 'rgba(255, 255, 255, 0.12)'
+        color: [36, 46, 61], // #242e3d
+        border: 'rgba(255, 255, 255, 0.10)'
       },
       brass: {
         name: 'Brass',
-        top: '#d4a373',
-        left: '#b08968',
-        right: '#7f5539',
-        border: 'rgba(250, 237, 205, 0.3)'
+        color: [212, 163, 115], // #d4a373
+        border: 'rgba(250, 237, 205, 0.25)'
       },
       concrete: {
         name: 'Concrete',
-        top: '#94a3b8',
-        left: '#64748b',
-        right: '#475569',
-        border: 'rgba(255, 255, 255, 0.2)'
+        color: [148, 163, 184], // #94a3b8
+        border: 'rgba(255, 255, 255, 0.15)'
       }
     };
 
     this.activeMaterial = 'slate';
-    this.activeTool = 'add'; // 'add' or 'remove'
+    this.activeTool = 'add';
     this.wireframeMode = false;
     this.autoRotate = false;
 
-    // Camera rotation steps (0 = 0°, 1 = 90°, 2 = 180°, 3 = 270°)
-    this.rotStep = 0;
+    // Free 3D Camera Angles (Yaw, Pitch)
+    this.yaw = Math.PI / 4 + 0.1; // ~45 deg
+    this.pitch = 0.58; // ~33 deg elevation
     this.panX = 0;
     this.panY = 0;
 
-    // Hover raycast state
-    this.hover = null; // { x, y, z, face: 'top'|'left'|'right'|'floor', addPos: {x,y,z} }
+    // Orbit Interaction State
+    this.isDragging = false;
+    this.lastMouse = { x: 0, y: 0 };
+    this.mouseMoved = false;
+    this.hover = null; // { isVoxel, x, y, z, normal, addPos }
 
-    // Performance
+    // Light direction vector (normalized) in world space
+    this.lightDir = this.normalizeVector({ x: 0.4, y: -0.6, z: 0.8 });
+
+    // FPS
     this.lastTime = performance.now();
     this.fps = 60;
     this.fpsTimer = 0;
@@ -89,16 +86,21 @@ class VoxelCanvasEngine {
     this.canvas.height = this.height * dpr;
     this.ctx.scale(dpr, dpr);
 
-    // Center point for isometric origin
     this.originX = this.width / 2 + this.panX;
     this.originY = this.height / 2 + 35 + this.panY;
   }
 
   bindEvents() {
     this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
-    this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    this.canvas.addEventListener('mouseleave', () => { this.hover = null; });
+    window.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    window.addEventListener('mouseup', (e) => this.onMouseUp(e));
+    this.canvas.addEventListener('mouseleave', () => { if (!this.isDragging) this.hover = null; });
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Touch Support
+    this.canvas.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+    this.canvas.addEventListener('touchmove', (e) => this.onTouchMove(e), { passive: false });
+    this.canvas.addEventListener('touchend', (e) => this.onTouchEnd(e));
 
     // Presets
     document.querySelectorAll('[data-preset]').forEach(btn => {
@@ -108,7 +110,7 @@ class VoxelCanvasEngine {
       });
     });
 
-    // Tools (Add / Remove)
+    // Tools
     document.querySelectorAll('[data-tool]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
@@ -135,42 +137,43 @@ class VoxelCanvasEngine {
       });
     }
 
-    // Rotate Camera (90 degrees step per click)
+    // Auto Rotate Toggle
     const rotateBtn = document.getElementById('toggleRotate');
     if (rotateBtn) {
       rotateBtn.addEventListener('click', () => {
-        this.rotStep = (this.rotStep + 1) % 4;
+        this.autoRotate = !this.autoRotate;
+        rotateBtn.classList.toggle('active', this.autoRotate);
       });
     }
   }
 
-  // Rotate world coordinates by current camera step
-  transformCoords(x, y) {
-    switch (this.rotStep) {
-      case 1: return { rx: -y, ry: x };
-      case 2: return { rx: -x, ry: -y };
-      case 3: return { rx: y, ry: -x };
-      default: return { rx: x, ry: y };
-    }
+  normalizeVector(v) {
+    const len = Math.hypot(v.x, v.y, v.z) || 1;
+    return { x: v.x / len, y: v.y / len, z: v.z / len };
   }
 
-  invTransformCoords(rx, ry) {
-    switch (this.rotStep) {
-      case 1: return { x: ry, y: -rx };
-      case 2: return { x: -rx, y: -ry };
-      case 3: return { x: -ry, y: rx };
-      default: return { x: rx, y: ry };
-    }
-  }
-
-  // Pure 2:1 Isometric Projection
-  // Returns screen center of the base diamond for integer voxel (x,y,z)
+  // 3D to 2D Screen Projection
   project(x, y, z) {
-    const { rx, ry } = this.transformCoords(x, y);
-    const sx = this.originX + (rx - ry) * (this.tileW / 2);
-    const sy = this.originY + (rx + ry) * (this.tileH / 2) - z * this.tileD;
-    const depth = (rx + ry) * 10 + z;
-    return { sx, sy, depth };
+    const cosY = Math.cos(this.yaw);
+    const sinY = Math.sin(this.yaw);
+    const cosP = Math.cos(this.pitch);
+    const sinP = Math.sin(this.pitch);
+
+    // 1. Rotate around Z (Yaw)
+    const x1 = x * cosY - y * sinY;
+    const y1 = x * sinY + y * cosY;
+    const z1 = z;
+
+    // 2. Rotate around X (Pitch / Elevation)
+    const x2 = x1;
+    const y2 = y1 * cosP - z1 * sinP;
+    const z2 = y1 * sinP + z1 * cosP; // Depth along camera axis
+
+    return {
+      sx: this.originX + x2 * this.scale,
+      sy: this.originY - y2 * this.scale,
+      depth: z2
+    };
   }
 
   setVoxel(x, y, z, mat) {
@@ -191,8 +194,8 @@ class VoxelCanvasEngine {
     this.clear();
 
     if (preset === 'monolith') {
-      // Iconic Voxel Stepped Cluster sitting flush on the floor grid
-      // Foundation (z = 0)
+      // Authentic Voxel stepped cluster sitting perfectly on floor grid
+      // Ground foundation (z = 0)
       this.setVoxel(-1, -1, 0, 'obsidian');
       this.setVoxel(0, -1, 0, 'obsidian');
       this.setVoxel(1, -1, 0, 'obsidian');
@@ -216,7 +219,7 @@ class VoxelCanvasEngine {
       this.setVoxel(0, 0, 3, 'concrete');
       this.setVoxel(1, 0, 3, 'brass');
     } else if (preset === 'arch') {
-      // Clean Portal on Floor Grid
+      // Portal Preset
       for (let z = 0; z <= 3; z++) {
         this.setVoxel(-1, 0, z, 'obsidian');
         this.setVoxel(1, 0, z, 'obsidian');
@@ -235,119 +238,206 @@ class VoxelCanvasEngine {
     }
   }
 
+  // Mouse & Touch Camera Orbit Controls
+  onMouseDown(e) {
+    this.isDragging = true;
+    this.mouseMoved = false;
+    this.lastMouse = { x: e.clientX, y: e.clientY };
+  }
+
   onMouseMove(e) {
     const rect = this.canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-    this.updateHover(mx, my);
-  }
 
-  onMouseDown(e) {
-    if (!this.hover) return;
+    if (this.isDragging) {
+      const dx = e.clientX - this.lastMouse.x;
+      const dy = e.clientY - this.lastMouse.y;
 
-    const isRightClick = e.button === 2;
-
-    if (isRightClick || this.activeTool === 'remove') {
-      if (this.hover.isVoxel) {
-        this.removeVoxel(this.hover.x, this.hover.y, this.hover.z);
-        this.hover = null;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        this.mouseMoved = true;
       }
-    } else if (this.activeTool === 'add') {
-      if (this.hover.addPos) {
-        const { x, y, z } = this.hover.addPos;
-        this.setVoxel(x, y, z, this.activeMaterial);
-      }
+
+      this.yaw += dx * 0.008;
+      this.pitch = Math.max(0.15, Math.min(1.25, this.pitch + dy * 0.005));
+      this.lastMouse = { x: e.clientX, y: e.clientY };
+      this.hover = null;
+    } else {
+      this.updateHover(mx, my);
     }
   }
 
+  onMouseUp(e) {
+    if (!this.mouseMoved && e.target === this.canvas && this.hover) {
+      const isRightClick = e.button === 2;
+
+      if (isRightClick || this.activeTool === 'remove') {
+        if (this.hover.isVoxel) {
+          this.removeVoxel(this.hover.x, this.hover.y, this.hover.z);
+          this.hover = null;
+        }
+      } else if (this.activeTool === 'add') {
+        if (this.hover.addPos) {
+          const { x, y, z } = this.hover.addPos;
+          this.setVoxel(x, y, z, this.activeMaterial);
+        }
+      }
+    }
+
+    this.isDragging = false;
+  }
+
+  onTouchStart(e) {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      this.isDragging = true;
+      this.mouseMoved = false;
+      this.lastMouse = { x: touch.clientX, y: touch.clientY };
+    }
+  }
+
+  onTouchMove(e) {
+    if (this.isDragging && e.touches.length === 1) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const dx = touch.clientX - this.lastMouse.x;
+      const dy = touch.clientY - this.lastMouse.y;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        this.mouseMoved = true;
+      }
+
+      this.yaw += dx * 0.008;
+      this.pitch = Math.max(0.15, Math.min(1.25, this.pitch + dy * 0.005));
+      this.lastMouse = { x: touch.clientX, y: touch.clientY };
+    }
+  }
+
+  onTouchEnd(e) {
+    this.isDragging = false;
+  }
+
+  // Point in Polygon Test for precise face raycasting
+  pointInPoly(px, py, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const xi = poly[i].sx, yi = poly[i].sy;
+      const xj = poly[j].sx, yj = poly[j].sy;
+      const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  // Raycast all polygons (faces) from front to back
   updateHover(mx, my) {
-    const hw = this.tileW / 2;
-    const hh = this.tileH / 2;
-    const hd = this.tileD;
+    const polygons = this.generateScenePolygons();
+    // Sort from front-most (highest depth) to back-most
+    polygons.sort((a, b) => b.depth - a.depth);
 
-    // 1. Check existing voxels from top to bottom (depth sorted)
-    const list = Array.from(this.voxels.values());
-    list.sort((a, b) => {
-      const da = this.project(a.x, a.y, a.z).depth;
-      const db = this.project(b.x, b.y, b.z).depth;
-      return db - da; // front-most first
-    });
-
-    for (const v of list) {
-      const p = this.project(v.x, v.y, v.z);
-      const sx = p.sx;
-      const baseSy = p.sy;
-      const topSy = baseSy - hd;
-
-      // Test Top Face (Diamond at topSy)
-      const dxTop = Math.abs(mx - sx);
-      const dyTop = Math.abs(my - topSy);
-      if (dxTop / hw + dyTop / hh <= 1.0) {
-        this.hover = {
-          x: v.x, y: v.y, z: v.z,
-          isVoxel: true,
-          face: 'top',
-          addPos: { x: v.x, y: v.y, z: v.z + 1 }
-        };
+    for (const poly of polygons) {
+      if (this.pointInPoly(mx, my, poly.points)) {
+        this.hover = poly.hoverData;
         return;
-      }
-
-      // Test Left Face (Quad between sx-hw and sx, topSy+hh to baseSy+hh)
-      if (mx >= sx - hw && mx <= sx && my >= topSy && my <= baseSy + hh) {
-        // Precise diagonal check for left face
-        const relX = (mx - (sx - hw)) / hw; // 0 to 1
-        const topY = topSy - hh * (1 - relX) + hh * relX;
-        if (my >= topY && my <= topY + hd) {
-          const { x: ax, y: ay } = this.invTransformCoords(-1, 0);
-          this.hover = {
-            x: v.x, y: v.y, z: v.z,
-            isVoxel: true,
-            face: 'left',
-            addPos: { x: v.x + ax, y: v.y + ay, z: v.z }
-          };
-          return;
-        }
-      }
-
-      // Test Right Face (Quad between sx and sx+hw)
-      if (mx >= sx && mx <= sx + hw && my >= topSy && my <= baseSy + hh) {
-        const relX = (mx - sx) / hw; // 0 to 1
-        const topY = topSy + hh * (1 - relX) - hh * relX;
-        if (my >= topY && my <= topY + hd) {
-          const { x: ax, y: ay } = this.invTransformCoords(0, 1);
-          this.hover = {
-            x: v.x, y: v.y, z: v.z,
-            isVoxel: true,
-            face: 'right',
-            addPos: { x: v.x + ax, y: v.y + ay, z: v.z }
-          };
-          return;
-        }
-      }
-    }
-
-    // 2. If no voxel hovered, test Floor Grid (z = 0)
-    for (let x = -this.gridRadius; x <= this.gridRadius; x++) {
-      for (let y = -this.gridRadius; y <= this.gridRadius; y++) {
-        const p = this.project(x, y, 0);
-        const dx = Math.abs(mx - p.sx);
-        const dy = Math.abs(my - p.sy);
-        if (dx / hw + dy / hh <= 1.0) {
-          // Check if voxel already exists at (x,y,0)
-          if (!this.voxels.has(`${x},${y},0`)) {
-            this.hover = {
-              x, y, z: 0,
-              isVoxel: false,
-              face: 'floor',
-              addPos: { x, y, z: 0 }
-            };
-            return;
-          }
-        }
       }
     }
 
     this.hover = null;
+  }
+
+  // Generates 3D quad polygons for all visible faces of voxels and floor grid
+  generateScenePolygons() {
+    const polys = [];
+
+    // 1. Floor Grid Tiles (Sitting at Z = 0)
+    const r = this.gridRadius;
+    for (let x = -r; x <= r; x++) {
+      for (let y = -r; y <= r; y++) {
+        // Floor tile corners: (x±0.5, y±0.5, 0)
+        const p1 = this.project(x - 0.5, y - 0.5, 0);
+        const p2 = this.project(x + 0.5, y - 0.5, 0);
+        const p3 = this.project(x + 0.5, y + 0.5, 0);
+        const p4 = this.project(x - 0.5, y + 0.5, 0);
+
+        const depth = (p1.depth + p2.depth + p3.depth + p4.depth) / 4;
+
+        polys.push({
+          type: 'floor',
+          x, y, z: 0,
+          depth,
+          points: [p1, p2, p3, p4],
+          hoverData: {
+            isVoxel: false,
+            x, y, z: 0,
+            normal: { x: 0, y: 0, z: 1 },
+            addPos: { x, y, z: 0 }
+          }
+        });
+      }
+    }
+
+    // 2. Voxel Cube Faces (6 faces per cube)
+    const faceDefs = [
+      // Top (+Z)
+      { normal: { x: 0, y: 0, z: 1 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z+1], [x+0.5, y-0.5, z+1], [x+0.5, y+0.5, z+1], [x-0.5, y+0.5, z+1] ] },
+      // Bottom (-Z)
+      { normal: { x: 0, y: 0, z: -1 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y+0.5, z], [x+0.5, y+0.5, z], [x+0.5, y-0.5, z] ] },
+      // Front (+Y)
+      { normal: { x: 0, y: 1, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y+0.5, z], [x+0.5, y+0.5, z], [x+0.5, y+0.5, z+1], [x-0.5, y+0.5, z+1] ] },
+      // Back (-Y)
+      { normal: { x: 0, y: -1, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y-0.5, z+1], [x+0.5, y-0.5, z+1], [x+0.5, y-0.5, z] ] },
+      // Right (+X)
+      { normal: { x: 1, y: 0, z: 0 }, getVerts: (x,y,z) => [ [x+0.5, y-0.5, z], [x+0.5, y+0.5, z], [x+0.5, y+0.5, z+1], [x+0.5, y-0.5, z+1] ] },
+      // Left (-X)
+      { normal: { x: -1, y: 0, z: 0 }, getVerts: (x,y,z) => [ [x-0.5, y-0.5, z], [x-0.5, y-0.5, z+1], [x-0.5, y+0.5, z+1], [x-0.5, y+0.5, z] ] }
+    ];
+
+    const cosY = Math.cos(this.yaw);
+    const sinY = Math.sin(this.yaw);
+    const cosP = Math.cos(this.pitch);
+    const sinP = Math.sin(this.pitch);
+
+    for (const v of this.voxels.values()) {
+      for (const fd of faceDefs) {
+        // Compute Camera-Space Normal to test Backface Culling
+        const nx = fd.normal.x * cosY - fd.normal.y * sinY;
+        const ny = fd.normal.x * sinY + fd.normal.y * cosY;
+        const camNormalZ = ny * sinP + fd.normal.z * cosP;
+
+        // If face points towards camera (camNormalZ > 0)
+        if (camNormalZ > 0.001) {
+          const rawVerts = fd.getVerts(v.x, v.y, v.z);
+          const pts = rawVerts.map(pt => this.project(pt[0], pt[1], pt[2]));
+          const depth = (pts[0].depth + pts[1].depth + pts[2].depth + pts[3].depth) / 4;
+
+          // Compute Light Shading (dot product with light vector)
+          const dot = Math.max(0, fd.normal.x * this.lightDir.x + fd.normal.y * this.lightDir.y + fd.normal.z * this.lightDir.z);
+          const lightFactor = 0.45 + 0.55 * dot; // Ambient + Diffuse
+
+          polys.push({
+            type: 'voxel',
+            x: v.x, y: v.y, z: v.z,
+            mat: v.mat,
+            normal: fd.normal,
+            depth,
+            points: pts,
+            lightFactor,
+            hoverData: {
+              isVoxel: true,
+              x: v.x, y: v.y, z: v.z,
+              normal: fd.normal,
+              addPos: {
+                x: v.x + fd.normal.x,
+                y: v.y + fd.normal.y,
+                z: v.z + fd.normal.z
+              }
+            }
+          });
+        }
+      }
+    }
+
+    return polys;
   }
 
   renderLoop(time) {
@@ -362,6 +452,10 @@ class VoxelCanvasEngine {
       if (fpsEl) fpsEl.textContent = `${this.fps} FPS`;
     }
 
+    if (this.autoRotate && !this.isDragging) {
+      this.yaw += dt * 0.25;
+    }
+
     this.render();
     requestAnimationFrame((t) => this.renderLoop(t));
   }
@@ -369,155 +463,116 @@ class VoxelCanvasEngine {
   render() {
     this.ctx.clearRect(0, 0, this.width, this.height);
 
-    // 1. Draw Floor Grid (Sitting at z = 0)
-    this.drawFloorGrid();
+    // 1. Generate & Sort all 3D Polygons (Back to Front)
+    const polys = this.generateScenePolygons();
+    polys.sort((a, b) => a.depth - b.depth); // Painter's Algorithm
 
-    // 2. Sort Voxels Back to Front
-    const list = Array.from(this.voxels.values());
-    list.sort((a, b) => {
-      const da = this.project(a.x, a.y, a.z).depth;
-      const db = this.project(b.x, b.y, b.z).depth;
-      return da - db; // Draw back to front
-    });
-
-    // 3. Render Solid/Wireframe Voxels
-    for (const v of list) {
-      this.drawVoxel(v.x, v.y, v.z, v.mat, false);
-    }
-
-    // 4. Render Hover Ghost Block
-    if (this.hover && this.activeTool === 'add' && this.hover.addPos) {
-      const p = this.hover.addPos;
-      this.drawVoxel(p.x, p.y, p.z, this.activeMaterial, true);
-    }
-  }
-
-  // Draws the isometric diamond floor grid with aligned tiles
-  drawFloorGrid() {
-    const r = this.gridRadius;
-    const hw = this.tileW / 2;
-    const hh = this.tileH / 2;
-
-    this.ctx.save();
-
-    // Draw Floor Tiles
-    for (let x = -r; x <= r; x++) {
-      for (let y = -r; y <= r; y++) {
-        const p = this.project(x, y, 0);
-        const isHovered = this.hover && !this.hover.isVoxel && this.hover.x === x && this.hover.y === y;
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(p.sx, p.sy - hh);
-        this.ctx.lineTo(p.sx + hw, p.sy);
-        this.ctx.lineTo(p.sx, p.sy + hh);
-        this.ctx.lineTo(p.sx - hw, p.sy);
-        this.ctx.closePath();
-
-        if (isHovered) {
-          this.ctx.fillStyle = 'rgba(212, 163, 115, 0.15)';
-          this.ctx.fill();
-          this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.6)';
-          this.ctx.lineWidth = 1.2;
-        } else {
-          this.ctx.fillStyle = ((x + y) % 2 === 0) ? 'rgba(255, 255, 255, 0.015)' : 'rgba(0, 0, 0, 0.15)';
-          this.ctx.fill();
-          this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-          this.ctx.lineWidth = 1;
-        }
-        this.ctx.stroke();
+    // 2. Draw Floor Grid & Voxels
+    for (const poly of polys) {
+      if (poly.type === 'floor') {
+        this.drawFloorTile(poly);
+      } else if (poly.type === 'voxel') {
+        this.drawVoxelFace(poly);
       }
     }
 
-    this.ctx.restore();
+    // 3. Render Ghost Box on Hover (Add tool)
+    if (this.hover && this.activeTool === 'add' && this.hover.addPos) {
+      this.drawGhostVoxel(this.hover.addPos.x, this.hover.addPos.y, this.hover.addPos.z, this.activeMaterial);
+    }
   }
 
-  // Draw a single voxel cube perfectly aligned with the floor grid
-  drawVoxel(x, y, z, matName, isGhost = false) {
-    const mat = this.materials[matName] || this.materials.slate;
-    const hw = this.tileW / 2;
-    const hh = this.tileH / 2;
-    const hd = this.tileD;
+  drawFloorTile(poly) {
+    const isHovered = this.hover && !this.hover.isVoxel && this.hover.x === poly.x && this.hover.y === poly.y;
+    const pts = poly.points;
 
-    const p = this.project(x, y, z);
-    const sx = p.sx;
-    const baseSy = p.sy;
-    const topSy = baseSy - hd;
+    this.ctx.beginPath();
+    this.ctx.moveTo(pts[0].sx, pts[0].sy);
+    this.ctx.lineTo(pts[1].sx, pts[1].sy);
+    this.ctx.lineTo(pts[2].sx, pts[2].sy);
+    this.ctx.lineTo(pts[3].sx, pts[3].sy);
+    this.ctx.closePath();
 
-    this.ctx.save();
-
-    if (isGhost) {
-      this.ctx.globalAlpha = 0.45;
-      this.ctx.setLineDash([3, 2]);
+    if (isHovered) {
+      this.ctx.fillStyle = 'rgba(212, 163, 115, 0.18)';
+      this.ctx.fill();
+      this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.7)';
+      this.ctx.lineWidth = 1.2;
+    } else {
+      this.ctx.fillStyle = ((poly.x + poly.y) % 2 === 0) ? 'rgba(255, 255, 255, 0.015)' : 'rgba(0, 0, 0, 0.12)';
+      this.ctx.fill();
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+      this.ctx.lineWidth = 1;
     }
+    this.ctx.stroke();
+  }
+
+  drawVoxelFace(poly) {
+    const mat = this.materials[poly.mat] || this.materials.slate;
+    const pts = poly.points;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(pts[0].sx, pts[0].sy);
+    this.ctx.lineTo(pts[1].sx, pts[1].sy);
+    this.ctx.lineTo(pts[2].sx, pts[2].sy);
+    this.ctx.lineTo(pts[3].sx, pts[3].sy);
+    this.ctx.closePath();
 
     if (this.wireframeMode) {
-      this.ctx.strokeStyle = isGhost ? 'rgba(212, 163, 115, 0.8)' : '#e2e8f0';
-      this.ctx.lineWidth = 1.2;
-
-      // Top diamond
-      this.ctx.beginPath();
-      this.ctx.moveTo(sx, topSy - hh);
-      this.ctx.lineTo(sx + hw, topSy);
-      this.ctx.lineTo(sx, topSy + hh);
-      this.ctx.lineTo(sx - hw, topSy);
-      this.ctx.closePath();
-      this.ctx.stroke();
-
-      // Vertical edges
-      this.ctx.beginPath();
-      this.ctx.moveTo(sx - hw, topSy);
-      this.ctx.lineTo(sx - hw, baseSy);
-      this.ctx.moveTo(sx + hw, topSy);
-      this.ctx.lineTo(sx + hw, baseSy);
-      this.ctx.moveTo(sx, topSy + hh);
-      this.ctx.lineTo(sx, baseSy + hh);
-      this.ctx.stroke();
-
-      // Bottom contour
-      this.ctx.beginPath();
-      this.ctx.moveTo(sx - hw, baseSy);
-      this.ctx.lineTo(sx, baseSy + hh);
-      this.ctx.lineTo(sx + hw, baseSy);
+      this.ctx.strokeStyle = '#e2e8f0';
+      this.ctx.lineWidth = 1.1;
       this.ctx.stroke();
     } else {
-      // 1. TOP FACE (Diamond at topSy)
-      this.ctx.fillStyle = mat.top;
-      this.ctx.beginPath();
-      this.ctx.moveTo(sx, topSy - hh);
-      this.ctx.lineTo(sx + hw, topSy);
-      this.ctx.lineTo(sx, topSy + hh);
-      this.ctx.lineTo(sx - hw, topSy);
-      this.ctx.closePath();
+      // Calculate shaded color with light factor
+      const r = Math.round(mat.color[0] * poly.lightFactor);
+      const g = Math.round(mat.color[1] * poly.lightFactor);
+      const b = Math.round(mat.color[2] * poly.lightFactor);
+
+      this.ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
       this.ctx.fill();
 
-      this.ctx.strokeStyle = mat.border || 'rgba(255, 255, 255, 0.15)';
-      this.ctx.lineWidth = 0.8;
+      // Subtle edge bevel stroke
+      this.ctx.strokeStyle = mat.border || 'rgba(255, 255, 255, 0.12)';
+      this.ctx.lineWidth = 0.75;
       this.ctx.stroke();
+    }
+  }
 
-      // 2. LEFT FACE (Mid tone shadow)
-      this.ctx.fillStyle = mat.left;
+  drawGhostVoxel(x, y, z, matName) {
+    const mat = this.materials[matName] || this.materials.slate;
+    const pts = [
+      this.project(x - 0.5, y - 0.5, z),
+      this.project(x + 0.5, y - 0.5, z),
+      this.project(x + 0.5, y + 0.5, z),
+      this.project(x - 0.5, y + 0.5, z),
+      this.project(x - 0.5, y - 0.5, z + 1),
+      this.project(x + 0.5, y - 0.5, z + 1),
+      this.project(x + 0.5, y + 0.5, z + 1),
+      this.project(x - 0.5, y + 0.5, z + 1)
+    ];
+
+    this.ctx.save();
+    this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.8)';
+    this.ctx.fillStyle = 'rgba(212, 163, 115, 0.15)';
+    this.ctx.lineWidth = 1.2;
+    this.ctx.setLineDash([3, 2]);
+
+    // Top face
+    this.ctx.beginPath();
+    this.ctx.moveTo(pts[4].sx, pts[4].sy);
+    this.ctx.lineTo(pts[5].sx, pts[5].sy);
+    this.ctx.lineTo(pts[6].sx, pts[6].sy);
+    this.ctx.lineTo(pts[7].sx, pts[7].sy);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    // Side edges
+    const edges = [[0, 4], [1, 5], [2, 6], [3, 7], [0, 1], [1, 2], [2, 3], [3, 0]];
+    for (const [i, j] of edges) {
       this.ctx.beginPath();
-      this.ctx.moveTo(sx - hw, topSy);
-      this.ctx.lineTo(sx, topSy + hh);
-      this.ctx.lineTo(sx, baseSy + hh);
-      this.ctx.lineTo(sx - hw, baseSy);
-      this.ctx.closePath();
-      this.ctx.fill();
-
-      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
-      this.ctx.stroke();
-
-      // 3. RIGHT FACE (Deep shadow)
-      this.ctx.fillStyle = mat.right;
-      this.ctx.beginPath();
-      this.ctx.moveTo(sx, topSy + hh);
-      this.ctx.lineTo(sx + hw, topSy);
-      this.ctx.lineTo(sx + hw, baseSy);
-      this.ctx.lineTo(sx, baseSy + hh);
-      this.ctx.closePath();
-      this.ctx.fill();
-
-      this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+      this.ctx.moveTo(pts[i].sx, pts[i].sy);
+      this.ctx.lineTo(pts[j].sx, pts[j].sy);
       this.ctx.stroke();
     }
 
