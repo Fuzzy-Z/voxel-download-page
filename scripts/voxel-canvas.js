@@ -41,11 +41,11 @@ class VoxelCanvasEngine {
         sideColor: [21, 28, 39],
         border: 'rgba(255, 255, 255, 0.10)'
       },
-      brass: {
-        name: 'Latão',
-        topColor: [212, 163, 115],
-        sideColor: [176, 137, 104],
-        border: 'rgba(250, 237, 205, 0.28)'
+      steel: {
+        name: 'Aço',
+        topColor: [203, 213, 225],
+        sideColor: [148, 163, 184],
+        border: 'rgba(255, 255, 255, 0.2)'
       },
       concrete: {
         name: 'Concreto',
@@ -456,9 +456,9 @@ class VoxelCanvasEngine {
     this.ctx.closePath();
 
     if (isHovered) {
-      this.ctx.fillStyle = 'rgba(212, 163, 115, 0.18)';
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
       this.ctx.fill();
-      this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.7)';
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
       this.ctx.lineWidth = 1.2;
     } else {
       this.ctx.fillStyle = ((poly.x + poly.y) % 2 === 0) ? 'rgba(255, 255, 255, 0.015)' : 'rgba(0, 0, 0, 0.12)';
@@ -514,8 +514,8 @@ class VoxelCanvasEngine {
     ];
 
     this.ctx.save();
-    this.ctx.strokeStyle = 'rgba(212, 163, 115, 0.85)';
-    this.ctx.fillStyle = 'rgba(212, 163, 115, 0.18)';
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
     this.ctx.lineWidth = 1.2;
     this.ctx.setLineDash([3, 2]);
 

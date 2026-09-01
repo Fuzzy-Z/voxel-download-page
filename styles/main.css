@@ -30,11 +30,9 @@
   /* Raw Material Palette */
   --mat-concrete: #94a3b8;
   --mat-obsidian: #334155;
-  --mat-brass: #d4a373;
-  --mat-brass-dark: #b08968;
-  --mat-clay: #c08552;
   --mat-slate: #64748b;
   --mat-quartz: #e2e8f0;
+  --mat-steel: #cbd5e1;
 
   /* Tactical Status */
   --status-active: #86efac;
@@ -140,9 +138,9 @@ button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--mat-brass);
-  background: rgba(212, 163, 115, 0.08);
-  border: 1px solid rgba(212, 163, 115, 0.25);
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
   padding: 0.25rem 0.65rem;
   border-radius: var(--radius-xs);
   margin-bottom: 1rem;
@@ -220,7 +218,7 @@ button {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xs);
-  box-shadow: 1.5px 1.5px 0px var(--mat-brass);
+  box-shadow: 1.5px 1.5px 0px var(--border-strong);
 }
 
 .logo-cube::after {
@@ -461,7 +459,7 @@ button {
 }
 
 .cli-prompt {
-  color: var(--mat-brass);
+  color: var(--text-muted);
   user-select: none;
 }
 
@@ -482,9 +480,9 @@ button {
 }
 
 .copy-btn.copied {
-  background: var(--mat-brass);
+  background: var(--status-stable);
   color: var(--bg-deep);
-  border-color: var(--mat-brass);
+  border-color: var(--status-stable);
   font-weight: 700;
 }
 
@@ -544,7 +542,7 @@ button {
 }
 
 .viewport-coords {
-  color: var(--mat-brass);
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -571,8 +569,9 @@ button {
 }
 
 .tool-btn.active {
-  border-color: var(--mat-brass);
-  color: var(--mat-brass);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background: var(--bg-highlight);
 }
 
 .voxel-canvas-stage {
@@ -673,7 +672,7 @@ button {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--mat-brass);
+  color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
 
@@ -729,16 +728,15 @@ button {
   background: var(--bg-primary);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
-  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-medium);
 }
 
 .bench-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
 }
 
 .bench-table tr:last-child td {
@@ -748,23 +746,18 @@ button {
 .bench-metric-name {
   font-weight: 600;
   color: var(--text-primary);
+  display: block;
 }
 
 .bench-metric-sub {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .bench-val-voxel {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-xs);
-  display: inline-block;
+  color: var(--status-stable);
 }
 
 .bench-val-competitor {
@@ -773,11 +766,11 @@ button {
 }
 
 .spec-blueprint-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-strong);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-medium);
   border-radius: var(--radius-sm);
-  padding: 1.75rem;
-  box-shadow: var(--shadow-hard);
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.5);
 }
 
 .spec-header {
@@ -792,7 +785,7 @@ button {
 .spec-tag {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.75rem;
-  color: var(--mat-brass);
+  color: var(--text-secondary);
 }
 
 .spec-list {
@@ -916,9 +909,9 @@ button {
 }
 
 .badge-in-progress {
-  background: rgba(212, 163, 115, 0.12) !important;
-  color: var(--mat-brass) !important;
-  border: 1px solid rgba(212, 163, 115, 0.35) !important;
+  background: var(--bg-elevated) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-medium) !important;
   font-weight: 600;
 }
 
