@@ -31,7 +31,7 @@ function detectUserPlatform() {
   let size = '129 MB';
   let osIcon = '⊞';
   let isAvailable = true;
-  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.35/Voxel-v1.0.36-Windows-x64.zip';
+  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.35/Voxel-v1.0.37-Windows-x64.zip';
 
   if (userAgent.includes('mac') || platform.includes('mac')) {
     osName = 'macOS';
@@ -52,13 +52,13 @@ function detectUserPlatform() {
   if (titleEl && subEl && iconEl && mainBtn) {
     if (isAvailable) {
       titleEl.textContent = `Baixar para ${osName}`;
-      subEl.textContent = `v1.0.36 (Portátil .zip) • ${size}`;
+      subEl.textContent = `v1.0.37 (Portátil .zip) • ${size}`;
       iconEl.textContent = osIcon;
       mainBtn.href = directDownloadUrl;
-      mainBtn.setAttribute('download', 'Voxel-v1.0.36-Windows-x64.zip');
+      mainBtn.setAttribute('download', 'Voxel-v1.0.37-Windows-x64.zip');
     } else {
       titleEl.textContent = `${osName} (Em andamento)`;
-      subEl.textContent = `v1.0.36 • Em desenvolvimento`;
+      subEl.textContent = `v1.0.37 • Em desenvolvimento`;
       iconEl.textContent = osIcon;
       mainBtn.href = `#downloads`;
       mainBtn.removeAttribute('download');
