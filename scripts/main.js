@@ -31,7 +31,7 @@ function detectUserPlatform() {
   let size = '129 MB';
   let osIcon = '⊞';
   let isAvailable = true;
-  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.46/Voxel%20Setup%201.0.46.exe';
+  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.35/Voxel.Setup.1.0.46.exe';
 
   if (userAgent.includes('mac') || platform.includes('mac')) {
     osName = 'macOS';
