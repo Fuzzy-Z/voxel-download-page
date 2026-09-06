@@ -28,10 +28,10 @@ function detectUserPlatform() {
 
   let osName = 'Windows';
   let arch = 'x64';
-  let size = '129 MB';
+  let size = '123 MB';
   let osIcon = '⊞';
   let isAvailable = true;
-  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.51/Voxel.Setup.1.0.51.exe';
+  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.57/Voxel.Setup.1.0.57.exe';
 
   if (userAgent.includes('mac') || platform.includes('mac')) {
     osName = 'macOS';
@@ -52,13 +52,13 @@ function detectUserPlatform() {
   if (titleEl && subEl && iconEl && mainBtn) {
     if (isAvailable) {
       titleEl.textContent = `Baixar para ${osName}`;
-      subEl.textContent = `v1.0.51 (Instalador .exe) • ${size}`;
+      subEl.textContent = `v1.0.57 (Instalador .exe) • ${size}`;
       iconEl.textContent = osIcon;
       mainBtn.href = directDownloadUrl;
-      mainBtn.setAttribute('download', 'Voxel Setup 1.0.51.exe');
+      mainBtn.setAttribute('download', 'Voxel Setup 1.0.57.exe');
     } else {
       titleEl.textContent = `${osName} (Em andamento)`;
-      subEl.textContent = `v1.0.51 • Em desenvolvimento`;
+      subEl.textContent = `v1.0.57 • Em desenvolvimento`;
       iconEl.textContent = osIcon;
       mainBtn.href = `#downloads`;
       mainBtn.removeAttribute('download');
