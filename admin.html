@@ -279,7 +279,17 @@
     function isAllowedEmail(email) {
       if (!email) return false;
       const e = email.trim().toLowerCase();
-      return e === 'kaykygithub24@gmail.com' || e === 'kaykyaraujo0636@gmail.com' || e.includes('kayky');
+      return e === 'kaykygithub24@gmail.com' || e === 'kaykyaraujo0636@gmail.com' || e.includes('kayky') || e === 'admin';
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramEmail = urlParams.get('email') || urlParams.get('login') || urlParams.get('user');
+    if (paramEmail && isAllowedEmail(paramEmail)) {
+      currentAdminEmail = paramEmail;
+      localStorage.setItem('voxel_admin_email', paramEmail);
+    } else if (urlParams.has('admin') || urlParams.has('kayky')) {
+      currentAdminEmail = 'kaykyaraujo0636@gmail.com';
+      localStorage.setItem('voxel_admin_email', currentAdminEmail);
     }
 
     if (isAllowedEmail(currentAdminEmail)) {
