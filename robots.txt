@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /obrigado
+Allow: /styles/
+Allow: /scripts/
+Allow: /assets/
+
+Disallow: /api/
+Disallow: /dist-electron/
+
+Sitemap: https://voxel-download-page.vercel.app/sitemap.xml

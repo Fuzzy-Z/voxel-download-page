@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 5. Setup Smooth Scrolling for Nav Links
   setupSmoothScroll();
+
+  // 6. Setup Referral & Personalized Link Detection
+  setupReferralLinks();
+
+  // 7. Setup FAQ Interactive Form Action
+  setupFaqContactForm();
 });
 
 /**
@@ -172,3 +178,61 @@ function setupSmoothScroll() {
     });
   });
 }
+
+/**
+ * Personalized / Referral link handler (?ref=instagram, ?ref=amigo, etc.)
+ */
+function setupReferralLinks() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get('ref') || urlParams.get('source') || urlParams.get('from');
+
+  const banner = document.getElementById('referralBanner');
+  const bannerText = document.getElementById('referralText');
+
+  if (ref && banner && bannerText) {
+    sessionStorage.setItem('voxel_ref', ref);
+    banner.classList.add('active');
+
+    if (ref.toLowerCase().includes('instagram') || ref.toLowerCase() === 'ig') {
+      bannerText.innerHTML = '👋 <b>Comunidade @voxelchat:</b> Seja bem-vindo pelo Instagram! Baixe o instalador oficial ou teste no navegador.';
+    } else if (ref.toLowerCase() === 'amigo' || ref.toLowerCase() === 'invite') {
+      bannerText.innerHTML = '🎮 <b>Convite VIP:</b> Você foi convidado para testar o Voxel em primeira mão!';
+    } else if (ref.toLowerCase() === 'android' || ref.toLowerCase() === 'mobile') {
+      bannerText.innerHTML = '📱 <b>Acesso Mobile:</b> Conheça a versão web e APK dedicado para Android do Voxel.';
+    } else {
+      bannerText.innerHTML = `✨ <b>Origem [${ref.toUpperCase()}]:</b> Bem-vindo ao programa de testes abertos do Voxel!`;
+    }
+  }
+}
+
+/**
+ * FAQ Quick Contact Form
+ */
+function setupFaqContactForm() {
+  const form = document.getElementById('faqQuestionForm');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const question = document.getElementById('faqQuestionInput')?.value.trim();
+    const channel = document.querySelector('input[name="contactChannel"]:checked')?.value || 'instagram';
+
+    if (!question) return;
+
+    if (channel === 'instagram') {
+      const igUrl = `https://ig.me/m/voxelchat`;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(`Dúvida do site Voxel: ${question}`).catch(() => {});
+      }
+      window.open(igUrl, '_blank') || window.open('https://instagram.com/voxelchat', '_blank');
+    } else if (channel === 'email') {
+      const subject = encodeURIComponent('Dúvida sobre o Voxel');
+      const body = encodeURIComponent(`Olá equipe do Voxel,\n\nTenho a seguinte dúvida:\n${question}`);
+      window.location.href = `mailto:contato@voxelchat.app?subject=${subject}&body=${body}`;
+    } else if (channel === 'whatsapp') {
+      const text = encodeURIComponent(`Olá! Tenho uma dúvida sobre o Voxel:\n${question}`);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    }
+  });
+}
+

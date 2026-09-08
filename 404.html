@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="monolith">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 // Setor Voxel Não Encontrado — Voxel</title>
+  
+  <meta name="description" content="Erro 404: As coordenadas especificadas não existem no espaço volumétrico do Voxel. Retorne à base principal.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#0a0c0e">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .page-404 {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at center, rgba(30, 36, 48, 0.45) 0%, var(--bg-deep) 75%);
+    }
+
+    .error-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      z-index: 2;
+    }
+
+    /* 3D Voxel Rotating Cube Stage */
+    .cube-stage {
+      width: 220px;
+      height: 220px;
+      perspective: 900px;
+      margin: 1.5rem auto 2.5rem;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .cube-stage:active {
+      cursor: grabbing;
+    }
+
+    .voxel-cube {
+      width: 120px;
+      height: 120px;
+      position: relative;
+      margin: 50px auto;
+      transform-style: preserve-3d;
+      transform: rotateX(-24deg) rotateY(38deg);
+      animation: voxelSpin 14s linear infinite;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes voxelSpin {
+      0% { transform: rotateX(-22deg) rotateY(0deg) rotateZ(0deg); }
+      50% { transform: rotateX(-28deg) rotateY(180deg) rotateZ(4deg); }
+      100% { transform: rotateX(-22deg) rotateY(360deg) rotateZ(0deg); }
+    }
+
+    .cube-face {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: rgba(24, 29, 38, 0.88);
+      border: 2px solid rgba(134, 239, 172, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #86efac;
+      box-shadow: inset 0 0 25px rgba(134, 239, 172, 0.08), 0 0 15px rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Grid pattern on cube faces */
+    .cube-face::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+    }
+
+    .face-front  { transform: rotateY(0deg) translateZ(60px); }
+    .face-back   { transform: rotateY(180deg) translateZ(60px); }
+    .face-right  { transform: rotateY(90deg) translateZ(60px); }
+    .face-left   { transform: rotateY(-90deg) translateZ(60px); }
+    .face-top    { transform: rotateX(90deg) translateZ(60px); background: rgba(30, 36, 48, 0.95); border-color: rgba(134, 239, 172, 0.6); }
+    .face-bottom { transform: rotateX(-90deg) translateZ(60px); background: rgba(15, 18, 22, 0.95); }
+
+    .cube-tag {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .error-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(3.5rem, 8vw, 6rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--text-primary);
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+      margin-bottom: 0.5rem;
+    }
+
+    .error-code span {
+      color: #86efac;
+    }
+
+    .error-title {
+      font-size: clamp(1.2rem, 3vw, 1.75rem);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .error-desc {
+      max-width: 540px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 0 auto 2rem;
+    }
+
+    .cta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .btn-return {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.75rem;
+      background: var(--text-primary);
+      color: var(--bg-deep);
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.2s var(--ease-tactile);
+      box-shadow: var(--shadow-button);
+    }
+
+    .btn-return:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.75rem;
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.2s var(--ease-tactile);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-surface);
+      border-color: var(--border-strong);
+    }
+
+    /* Ambient coordinate scanner text */
+    .telemetry-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-xs);
+      margin-bottom: 1.5rem;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f87171;
+      box-shadow: 0 0 8px #f87171;
+    }
+  </style>
+</head>
+<body class="page-404">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="/" class="brand-logo" aria-label="Voxel Home">
+        <img src="assets/icon.png" alt="Voxel Logo" class="brand-img" width="28" height="28">
+        <span>VOXEL</span>
+        <span class="version-tag">404 // NULL</span>
+      </a>
+
+      <div class="header-actions">
+        <a href="/" class="btn btn-secondary btn-sm">
+          <span>Página Inicial</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error Stage -->
+  <main class="error-container">
+    <div class="telemetry-row">
+      <span class="status-dot"></span>
+      <span>SETOR VIRTUAL // COORDENADAS [X:0 Y:0 Z:0] INVALIDAS</span>
+    </div>
+
+    <!-- 3D Rotating Voxel Cube -->
+    <div class="cube-stage" id="cubeStage" title="Arraste para rotacionar o cubo">
+      <div class="voxel-cube" id="voxelCube">
+        <div class="cube-face face-front">
+          <span class="cube-tag">VOXEL</span>
+          <span>404</span>
+        </div>
+        <div class="cube-face face-back">
+          <span class="cube-tag">STATUS</span>
+          <span>NULL</span>
+        </div>
+        <div class="cube-face face-right">
+          <span class="cube-tag">BLOCK</span>
+          <span>#000</span>
+        </div>
+        <div class="cube-face face-left">
+          <span class="cube-tag">ERROR</span>
+          <span>LOST</span>
+        </div>
+        <div class="cube-face face-top">
+          <span class="cube-tag">TOP</span>
+          <span>▲ 00</span>
+        </div>
+        <div class="cube-face face-bottom">
+          <span class="cube-tag">BASE</span>
+          <span>▼ 00</span>
+        </div>
+      </div>
+    </div>
+
+    <h1 class="error-code">4<span>0</span>4</h1>
+    <h2 class="error-title">Bloco ou Coordenada Não Encontrada</h2>
+    
+    <p class="error-desc">
+      O endereço requisitado não existe no espaço volumétrico do Voxel, foi realocado durante uma atualização de nós ou nunca esteve aqui.
+    </p>
+
+    <div class="cta-actions">
+      <a href="/" class="btn-return">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>Retornar à Base Inicial</span>
+      </a>
+
+      <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases" class="btn-outline" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Central de Downloads</span>
+      </a>
+    </div>
+  </main>
+
+  <!-- Interactive 3D Cube Drag Script -->
+  <script>
+    const stage = document.getElementById('cubeStage');
+    const cube = document.getElementById('voxelCube');
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let currentRotX = -24;
+    let currentRotY = 38;
+
+    stage.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      cube.style.animationPlayState = 'paused';
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      currentRotY += dx * 0.5;
+      currentRotX -= dy * 0.5;
+
+      cube.style.transform = `rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`;
+
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        setTimeout(() => {
+          cube.style.animationPlayState = 'running';
+        }, 800);
+      }
+    });
+
+    // Touch support for mobile
+    stage.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        cube.style.animationPlayState = 'paused';
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+
+      currentRotY += dx * 0.6;
+      currentRotX -= dy * 0.6;
+
+      cube.style.transform = `rotateX(${currentRotX}deg) rotateY(${currentRotY}deg)`;
+
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      if (isDragging) {
+        isDragging = false;
+        cube.style.animationPlayState = 'running';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -2,6 +2,57 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/baixar",
+      "destination": "https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe",
+      "permanent": false
+    },
+    {
+      "source": "/download",
+      "destination": "https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe",
+      "permanent": false
+    },
+    {
+      "source": "/windows",
+      "destination": "https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe",
+      "permanent": false
+    },
+    {
+      "source": "/instagram",
+      "destination": "https://instagram.com/voxelchat",
+      "permanent": false
+    },
+    {
+      "source": "/ig",
+      "destination": "https://instagram.com/voxelchat",
+      "permanent": false
+    },
+    {
+      "source": "/web",
+      "destination": "http://150.230.73.46:4000",
+      "permanent": false
+    },
+    {
+      "source": "/github",
+      "destination": "https://github.com/Fuzzy-Z/voxel-download-page",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/obrigado",
+      "destination": "/obrigado.html"
+    },
+    {
+      "source": "/feedback",
+      "destination": "/obrigado.html"
+    },
+    {
+      "source": "/teste",
+      "destination": "/obrigado.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
