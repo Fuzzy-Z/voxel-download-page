@@ -222,6 +222,18 @@ function setupFaqContactForm() {
 
     if (!question) return;
 
+    // Envia também para o endpoint central da VM da Oracle
+    fetch('http://150.230.73.46:4000/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Visitante FAQ',
+        contact: `Canal: ${channel}`,
+        message: question,
+        source: 'faq-form'
+      })
+    }).catch(() => {});
+
     if (channel === 'instagram') {
       const igUrl = `https://ig.me/m/voxelchat`;
       if (navigator.clipboard?.writeText) {

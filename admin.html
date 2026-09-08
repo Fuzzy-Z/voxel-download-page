@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="monolith">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin // Voxel Feedback Console</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .admin-page {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.4) 0%, var(--bg-deep) 80%);
+      padding: 2rem 1rem 5rem;
+    }
+
+    .admin-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .admin-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-medium);
+    }
+
+    .admin-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-xs);
+      background: rgba(134, 239, 172, 0.1);
+      border: 1px solid rgba(134, 239, 172, 0.3);
+      color: #86efac;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 2.5rem 2rem;
+      max-width: 440px;
+      margin: 4rem auto;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+    }
+
+    .auth-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      outline: none;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+    }
+
+    .auth-input:focus {
+      border-color: #86efac;
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--text-primary);
+      color: var(--bg-deep);
+      font-weight: 800;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .feedback-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      transition: border-color 0.2s;
+    }
+
+    .feedback-card:hover {
+      border-color: rgba(134, 239, 172, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .user-name {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+
+    .user-contact {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #86efac;
+      background: rgba(134, 239, 172, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-xs);
+    }
+
+    .feedback-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .feedback-body {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      margin-bottom: 0.85rem;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #f87171;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-xs);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: rgba(248, 113, 113, 0.15);
+      border-color: #f87171;
+    }
+
+    .refresh-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      color: var(--text-primary);
+      border-radius: var(--radius-xs);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      background: var(--bg-card);
+      border-color: #86efac;
+    }
+  </style>
+</head>
+<body class="admin-page">
+  <div class="admin-container">
+    
+    <!-- AUTH SCREEN -->
+    <div id="authScreen" class="auth-card">
+      <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🛡️</div>
+      <h1 class="auth-title">Console Administrativo</h1>
+      <p class="auth-desc">Informe seu e-mail de administrador para liberar o acesso aos feedbacks recebidos.</p>
+      
+      <form id="authForm">
+        <input type="email" id="adminEmailInput" class="auth-input" placeholder="ex: kaykygithub24@gmail.com" required autofocus>
+        <button type="submit" class="auth-btn">Acessar Painel</button>
+      </form>
+      <div id="authError" style="color: #f87171; font-size: 0.8rem; margin-top: 0.75rem; display: none;">
+        Acesso negado. Apenas kaykygithub24@gmail.com pode visualizar.
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboardScreen" style="display: none;">
+      <header class="admin-header">
+        <div>
+          <div class="admin-title-group">
+            <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Feedbacks & Dúvidas // Voxel</h1>
+            <span class="admin-badge">ADMIN ONLINE</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Conectado ao nó Oracle VM: <span style="font-family: monospace;">150.230.73.46:4000</span>
+          </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button type="button" id="refreshBtn" class="refresh-btn">
+            <span>Atualizar Lista</span>
+          </button>
+          <a href="/" class="refresh-btn" style="text-decoration: none;">
+            <span>Voltar ao Site</span>
+          </a>
+        </div>
+      </header>
+
+      <div id="feedbackList">
+        <div style="text-align: center; color: var(--text-muted); padding: 3rem;">
+          Carregando mensagens...
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_URL = 'http://150.230.73.46:4000/api/feedback';
+    let currentAdminEmail = localStorage.getItem('voxel_admin_email') || '';
+
+    const authScreen = document.getElementById('authScreen');
+    const dashboardScreen = document.getElementById('dashboardScreen');
+    const authForm = document.getElementById('authForm');
+    const authError = document.getElementById('authError');
+    const emailInput = document.getElementById('adminEmailInput');
+    const feedbackList = document.getElementById('feedbackList');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    if (currentAdminEmail === 'kaykygithub24@gmail.com') {
+      showDashboard();
+    }
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = emailInput.value.trim().toLowerCase();
+      if (val === 'kaykygithub24@gmail.com') {
+        currentAdminEmail = val;
+        localStorage.setItem('voxel_admin_email', val);
+        showDashboard();
+      } else {
+        authError.style.display = 'block';
+      }
+    });
+
+    refreshBtn.addEventListener('click', loadFeedbacks);
+
+    function showDashboard() {
+      authScreen.style.display = 'none';
+      dashboardScreen.style.display = 'block';
+      loadFeedbacks();
+    }
+
+    async function loadFeedbacks() {
+      feedbackList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 3rem;">Carregando mensagens...</div>';
+      try {
+        const res = await fetch(`${API_URL}?email=${encodeURIComponent(currentAdminEmail)}`);
+        if (!res.ok) throw new Error('Acesso negado pelo servidor.');
+        const data = await res.json();
+        renderFeedbacks(data.feedbacks || []);
+      } catch (err) {
+        feedbackList.innerHTML = `
+          <div style="text-align: center; color: #f87171; padding: 3rem; background: var(--bg-card); border-radius: var(--radius-md);">
+            <b>Erro ao conectar ao servidor da Oracle VM</b><br>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">${err.message}</span>
+          </div>
+        `;
+      }
+    }
+
+    function renderFeedbacks(feedbacks) {
+      if (!feedbacks || feedbacks.length === 0) {
+        feedbackList.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px dashed var(--border-medium);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
+            <strong style="color: var(--text-primary); font-size: 1rem;">Nenhum feedback recebido ainda</strong>
+            <p style="font-size: 0.85rem; margin-top: 0.25rem;">As mensagens enviadas pelo formulário do site aparecerão aqui em tempo real.</p>
+          </div>
+        `;
+        return;
+      }
+
+      feedbackList.innerHTML = feedbacks.map(fb => `
+        <div class="feedback-card" id="card_${fb.id}">
+          <div class="card-header">
+            <div class="user-info">
+              <span class="user-name">${escapeHtml(fb.name || 'Anônimo')}</span>
+              ${fb.contact ? `<span class="user-contact">${escapeHtml(fb.contact)}</span>` : ''}
+            </div>
+            <span class="feedback-time">${new Date(fb.createdAt).toLocaleString('pt-BR')}</span>
+          </div>
+
+          <div class="feedback-body">${escapeHtml(fb.message)}</div>
+
+          <div class="card-actions">
+            <div>
+              ${fb.contact && fb.contact.includes('@') && !fb.contact.includes(' ') ? `
+                <a href="mailto:${encodeURIComponent(fb.contact)}?subject=Voxel%20Feedback" style="color: #86efac; text-decoration: none; font-weight: 700; margin-right: 1rem;">Responder por E-mail →</a>
+              ` : ''}
+              ${fb.contact && fb.contact.startsWith('@') ? `
+                <a href="https://instagram.com/${encodeURIComponent(fb.contact.replace('@',''))}" target="_blank" rel="noopener" style="color: #a5b4fc; text-decoration: none; font-weight: 700;">Ver Instagram →</a>
+              ` : ''}
+            </div>
+
+            <button type="button" class="btn-delete" onclick="deleteFeedback('${fb.id}')">Excluir</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function deleteFeedback(id) {
+      if (!confirm('Deseja remover este feedback?')) return;
+      try {
+        await fetch(`${API_URL}/${id}?email=${encodeURIComponent(currentAdminEmail)}`, { method: 'DELETE' });
+        const card = document.getElementById('card_' + id);
+        if (card) card.remove();
+      } catch (err) {
+        alert('Erro ao excluir: ' + err.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
