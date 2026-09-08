@@ -290,6 +290,62 @@
     .direct-options a:hover {
       color: var(--status-active);
     }
+
+    /* Download Started Confirmation Banner */
+    .download-started-box {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      background: rgba(134, 239, 172, 0.08);
+      border: 1px solid rgba(134, 239, 172, 0.3);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      text-align: left;
+    }
+
+    .download-started-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(134, 239, 172, 0.15);
+      border: 1px solid #86efac;
+      color: #86efac;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .download-started-info {
+      text-align: left;
+    }
+
+    .download-started-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #86efac;
+      margin-bottom: 0.25rem;
+    }
+
+    .download-started-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .link-retry-download {
+      color: #fff;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.2s;
+    }
+
+    .link-retry-download:hover {
+      color: #86efac;
+    }
   </style>
 </head>
 <body class="thankyou-page">
@@ -325,6 +381,21 @@
     <h1 class="thankyou-headline">
       Obrigado por testar o Voxel.
     </h1>
+
+    <!-- Download confirmation card (Item: quando clicar em download aparece essa tela) -->
+    <div class="download-started-box" id="downloadStartedBox">
+      <div class="download-started-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="download-started-info">
+        <div class="download-started-title">Seu download do Voxel foi iniciado!</div>
+        <div class="download-started-subtitle">
+          Instalador oficial para Windows (.exe) • 123 MB. Caso o download não inicie automaticamente em instantes, <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe" download="Voxel Setup 1.0.58.exe" class="link-retry-download" id="retryDownloadBtn">clique aqui para baixar manualmente</a>.
+        </div>
+      </div>
+    </div>
 
     <p class="thankyou-lead">
       Você faz parte da fase pioneira da plataforma. Nosso objetivo é construir uma alternativa sólida, ultra-leve e sem cobranças predatórias para comunicação em grupo e jogos.
@@ -451,6 +522,23 @@
         btn.innerHTML = originalText;
         btn.style.background = '';
       }, 700);
+    });
+
+    // Auto-trigger direct file download if redirected from download CTA
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shouldDownload = urlParams.get('download') === 'auto' || urlParams.get('dl') === '1';
+      
+      if (shouldDownload) {
+        setTimeout(() => {
+          const autoDl = document.createElement('a');
+          autoDl.href = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe';
+          autoDl.download = 'Voxel Setup 1.0.58.exe';
+          document.body.appendChild(autoDl);
+          autoDl.click();
+          document.body.removeChild(autoDl);
+        }, 500);
+      }
     });
   </script>
 </body>

@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 7. Setup FAQ Interactive Form Action
   setupFaqContactForm();
+
+  // 8. Setup Download Redirect to Thank You Page
+  setupDownloadRedirects();
 });
 
 /**
@@ -235,4 +238,43 @@ function setupFaqContactForm() {
     }
   });
 }
+
+/**
+ * Trigger file download and redirect user to Thank You page
+ */
+function setupDownloadRedirects() {
+  const downloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe';
+  const thankYouTarget = window.location.protocol === 'file:' ? 'obrigado.html?download=auto' : '/obrigado?download=auto';
+
+  const downloadSelectors = [
+    '#primaryDownloadBtn',
+    '.download-btn-main',
+    '.btn-cta-main',
+    '.sticky-btn-download',
+    'a[href*="Voxel.Setup"]',
+    'a[download*="Voxel"]'
+  ];
+
+  const downloadElements = document.querySelectorAll(downloadSelectors.join(', '));
+
+  downloadElements.forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // 1. Trigger the download of the executable
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = 'Voxel Setup 1.0.58.exe';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // 2. Open / redirect to the thank you page
+      setTimeout(() => {
+        window.location.href = thankYouTarget;
+      }, 350);
+    });
+  });
+}
+
 
