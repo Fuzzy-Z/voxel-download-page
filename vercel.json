@@ -34,8 +34,8 @@
       "permanent": false
     },
     {
-      "source": "/github",
-      "destination": "https://github.com/Fuzzy-Z/voxel-download-page",
+      "source": "/suporte",
+      "destination": "/obrigado",
       "permanent": false
     }
   ],
