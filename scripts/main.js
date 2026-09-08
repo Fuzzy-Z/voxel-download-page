@@ -139,7 +139,7 @@ function setupKeyboardShortcuts() {
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
 
     const key = e.key.toLowerCase();
-    
+
     if (key === 'b') {
       const addTool = document.querySelector('[data-tool="add"]');
       if (addTool) addTool.click();
@@ -237,7 +237,7 @@ function setupFaqContactForm() {
     if (channel === 'instagram') {
       const igUrl = `https://ig.me/m/voxelchat`;
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(`Dúvida do site Voxel: ${question}`).catch(() => {});
+        navigator.clipboard.writeText(`Dúvida do site Voxel: ${question}`).catch(() => { });
       }
       window.open(igUrl, '_blank') || window.open('https://instagram.com/voxelchat', '_blank');
     } else if (channel === 'email') {

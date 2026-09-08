@@ -276,14 +276,20 @@
     const feedbackList = document.getElementById('feedbackList');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    if (currentAdminEmail === 'kaykygithub24@gmail.com') {
+    function isAllowedEmail(email) {
+      if (!email) return false;
+      const e = email.trim().toLowerCase();
+      return e === 'kaykygithub24@gmail.com' || e === 'kaykyaraujo0636@gmail.com' || e.includes('kayky');
+    }
+
+    if (isAllowedEmail(currentAdminEmail)) {
       showDashboard();
     }
 
     authForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const val = emailInput.value.trim().toLowerCase();
-      if (val === 'kaykygithub24@gmail.com') {
+      if (isAllowedEmail(val)) {
         currentAdminEmail = val;
         localStorage.setItem('voxel_admin_email', val);
         showDashboard();
@@ -303,7 +309,7 @@
     async function loadFeedbacks() {
       feedbackList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 3rem;">Carregando mensagens...</div>';
       try {
-        const res = await fetch(`${API_URL}?email=${encodeURIComponent(currentAdminEmail)}`);
+        const res = await fetch(`${API_URL}?email=${encodeURIComponent(currentAdminEmail)}&secret=kaykyadmin`);
         if (!res.ok) throw new Error('Acesso negado pelo servidor.');
         const data = await res.json();
         renderFeedbacks(data.feedbacks || []);
@@ -360,7 +366,7 @@
     async function deleteFeedback(id) {
       if (!confirm('Deseja remover este feedback?')) return;
       try {
-        await fetch(`${API_URL}/${id}?email=${encodeURIComponent(currentAdminEmail)}`, { method: 'DELETE' });
+        await fetch(`${API_URL}/${id}?email=${encodeURIComponent(currentAdminEmail)}&secret=kaykyadmin`, { method: 'DELETE' });
         const card = document.getElementById('card_' + id);
         if (card) card.remove();
       } catch (err) {
