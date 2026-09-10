@@ -1,0 +1,20 @@
+# Dependências
+node_modules/
+
+# Estado do deploy FTP (fica no servidor, nunca no repositório)
+.ftp-deploy-sync-state.json
+
+# Ambiente e credenciais
+.env
+.env.*
+*.local
+
+# Plataformas
+.vercel/
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
