@@ -5,17 +5,17 @@
   "redirects": [
     {
       "source": "/baixar",
-      "destination": "https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe",
+      "destination": "https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.94/Voxel-Setup-1.0.94.exe",
       "permanent": false
     },
     {
       "source": "/download",
-      "destination": "https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe",
+      "destination": "https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.94/Voxel-Setup-1.0.94.exe",
       "permanent": false
     },
     {
-      "source": "/windows",
-      "destination": "https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe",
+      "source": "/setup.exe",
+      "destination": "https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.94/Voxel-Setup-1.0.94.exe",
       "permanent": false
     },
     {
