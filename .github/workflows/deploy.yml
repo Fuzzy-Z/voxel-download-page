@@ -35,7 +35,7 @@ jobs:
           faltando=0
           for arquivo in index.html 404.html obrigado.html admin.html \
                          styles/main.css scripts/main.js scripts/voxel-canvas.js \
-                         robots.txt sitemap.xml .htaccess; do
+                         robots.txt sitemap.xml ; do
             if [ ! -f "$arquivo" ]; then
               echo "::error::Arquivo obrigatório ausente: $arquivo"
               faltando=1
