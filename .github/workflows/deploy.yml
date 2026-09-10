@@ -1,0 +1,130 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Simular o deploy (lista os arquivos, não envia nada)'
+        type: boolean
+        default: false
+
+# Um deploy por vez. Não cancela o que já está em andamento para nunca
+# deixar o servidor com um envio pela metade.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir arquivos obrigatórios
+        run: |
+          faltando=0
+          for arquivo in index.html 404.html obrigado.html admin.html \
+                         styles/main.css scripts/main.js scripts/voxel-canvas.js \
+                         robots.txt sitemap.xml .htaccess; do
+            if [ ! -f "$arquivo" ]; then
+              echo "::error::Arquivo obrigatório ausente: $arquivo"
+              faltando=1
+            fi
+          done
+          exit $faltando
+
+      - name: Conferir se os assets referenciados existem
+        run: |
+          quebrados=0
+          grep -rhoE '(src|href)="[^"]+\.(css|js|png|jpe?g|svg|ico|webp|woff2?)"' \
+              ./*.html scripts/*.js styles/*.css 2>/dev/null \
+            | sed -E 's/^[a-z]+="//; s/"$//' \
+            | grep -vE '^(https?:|//|data:)' \
+            | sort -u > /tmp/refs.txt
+          while IFS= read -r ref; do
+            [ -n "$ref" ] || continue
+            caminho="${ref%%\?*}"
+            caminho="${caminho%%#*}"
+            caminho="${caminho#/}"
+            if [ ! -f "$caminho" ]; then
+              echo "::error::Referência quebrada: $ref"
+              quebrados=1
+            fi
+          done < /tmp/refs.txt
+          exit $quebrados
+
+      - name: Conferir sintaxe do JavaScript
+        run: |
+          for arquivo in scripts/*.js; do
+            node --check "$arquivo" || exit 1
+          done
+
+  deploy:
+    name: Publicar via FTPS
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Aplicar domínio canônico em robots.txt e sitemap.xml
+        if: vars.SITE_URL != ''
+        run: |
+          destino="${{ vars.SITE_URL }}"
+          destino="${destino%/}"
+          sed -i "s|https://voxel-download-page.vercel.app|${destino}|g" robots.txt sitemap.xml
+          echo "Domínio canônico aplicado: ${destino}"
+
+      - name: Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ vars.FTP_PORT || 21 }}
+          protocol: ftps
+          #  server-dir: ${{ vars.FTP_SERVER_DIR || '/public_html/' }}
+          local-dir: ./
+          dry-run: ${{ inputs.dry-run || false }}
+          # Arquivos de projeto que não pertencem ao servidor público.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            README.md
+            LICENSE
+            package.json
+            package-lock.json
+            vercel.json
+
+  smoke-test:
+    name: Verificar site no ar
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: vars.SITE_URL != '' && !inputs.dry-run
+    steps:
+      - name: Checar rotas principais
+        run: |
+          base="${{ vars.SITE_URL }}"
+          base="${base%/}"
+          falhou=0
+          for rota in "/" "/obrigado" "/admin" "/robots.txt" "/sitemap.xml"; do
+            codigo=$(curl -sS -o /dev/null -w '%{http_code}' -L --max-time 20 "${base}${rota}" || echo "000")
+            if [ "$codigo" = "200" ]; then
+              echo "ok   ${rota} -> ${codigo}"
+            else
+              echo "::error::${rota} respondeu ${codigo} (esperado 200)"
+              falhou=1
+            fi
+          done
+          exit $falhou
