@@ -26,7 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 8. Setup Download Redirect to Thank You Page
   setupDownloadRedirects();
+
+  // 9. Fetch latest release dynamically from GitHub API
+  fetchLatestRelease();
 });
+
+// Default release state (auto-updated dynamically from GitHub API)
+let currentDownloadUrl = 'https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe';
+let currentVersion = '1.0.93';
+let currentFileSize = '127 MB';
+let currentFileName = 'Voxel-Setup-1.0.93.exe';
 
 /**
  * Auto-detect user OS and update primary download CTA
@@ -36,11 +45,8 @@ function detectUserPlatform() {
   const platform = window.navigator.platform ? window.navigator.platform.toLowerCase() : '';
 
   let osName = 'Windows';
-  let arch = 'x64';
-  let size = '123 MB';
   let osIcon = '⊞';
   let isAvailable = true;
-  let directDownloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe';
 
   if (userAgent.includes('mac') || platform.includes('mac')) {
     osName = 'macOS';
@@ -61,18 +67,61 @@ function detectUserPlatform() {
   if (titleEl && subEl && iconEl && mainBtn) {
     if (isAvailable) {
       titleEl.textContent = `Baixar para ${osName}`;
-      subEl.textContent = `v1.0.58 (Instalador .exe) • ${size}`;
+      subEl.textContent = `v${currentVersion} (Instalador .exe) • ${currentFileSize}`;
       iconEl.textContent = osIcon;
-      mainBtn.href = directDownloadUrl;
-      mainBtn.setAttribute('download', 'Voxel Setup 1.0.58.exe');
+      mainBtn.href = currentDownloadUrl;
+      mainBtn.setAttribute('download', currentFileName);
     } else {
       titleEl.textContent = `${osName} (Em andamento)`;
-      subEl.textContent = `v1.0.58 • Em desenvolvimento`;
+      subEl.textContent = `v${currentVersion} • Em desenvolvimento`;
       iconEl.textContent = osIcon;
       mainBtn.href = `#downloads`;
       mainBtn.removeAttribute('download');
     }
   }
+}
+
+/**
+ * Fetch latest release from GitHub API and update all UI elements automatically
+ */
+async function fetchLatestRelease() {
+  try {
+    const res = await fetch('https://api.github.com/repos/Fuzzy-Z/PulseCord/releases/latest');
+    if (res.ok) {
+      const data = await res.json();
+      const asset = data.assets?.find(a => a.name.endsWith('.exe') && !a.name.includes('blockmap'));
+      if (asset) {
+        currentDownloadUrl = asset.browser_download_url;
+        currentFileName = asset.name;
+        if (data.tag_name) {
+          currentVersion = data.tag_name.replace(/^v/, '');
+        }
+        if (asset.size) {
+          currentFileSize = `${(asset.size / (1024 * 1024)).toFixed(0)} MB`;
+        }
+        detectUserPlatform();
+        updateAllDownloadLinks();
+      }
+    }
+  } catch (e) {
+    // Keep fallback
+  }
+}
+
+/**
+ * Update all download links across cards and sticky navigation
+ */
+function updateAllDownloadLinks() {
+  document.querySelectorAll('a[download*="Voxel"], a[href*="releases/download"]').forEach(a => {
+    a.href = currentDownloadUrl;
+    a.setAttribute('download', currentFileName);
+  });
+
+  const stickyTag = document.querySelector('.sticky-cta-tag');
+  if (stickyTag) stickyTag.textContent = `Grátis • v${currentVersion}`;
+
+  const versionTag = document.querySelector('.version-tag');
+  if (versionTag) versionTag.textContent = `v${currentVersion}`;
 }
 
 /**
@@ -255,7 +304,6 @@ function setupFaqContactForm() {
  * Trigger file download and redirect user to Thank You page
  */
 function setupDownloadRedirects() {
-  const downloadUrl = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe';
   const thankYouTarget = window.location.protocol === 'file:' ? 'obrigado.html?download=auto' : '/obrigado?download=auto';
 
   const downloadSelectors = [
@@ -263,7 +311,7 @@ function setupDownloadRedirects() {
     '.download-btn-main',
     '.btn-cta-main',
     '.sticky-btn-download',
-    'a[href*="Voxel.Setup"]',
+    'a[href*="releases/download"]',
     'a[download*="Voxel"]'
   ];
 
@@ -275,8 +323,8 @@ function setupDownloadRedirects() {
 
       // 1. Trigger the download of the executable
       const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = 'Voxel Setup 1.0.58.exe';
+      a.href = currentDownloadUrl;
+      a.download = currentFileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

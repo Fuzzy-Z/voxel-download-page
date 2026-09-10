@@ -363,7 +363,7 @@
         <a href="/" class="btn btn-secondary btn-sm">
           <span>Página Inicial</span>
         </a>
-        <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe" download="Voxel Setup 1.0.58.exe" class="btn btn-primary btn-sm">
+        <a href="https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe" download="Voxel-Setup-1.0.93.exe" class="btn btn-primary btn-sm" id="headerDownloadBtn">
           <span>Baixar Voxel (.exe)</span>
         </a>
       </div>
@@ -392,7 +392,7 @@
       <div class="download-started-info">
         <div class="download-started-title">Seu download do Voxel foi iniciado!</div>
         <div class="download-started-subtitle">
-          Instalador oficial para Windows (.exe) • 123 MB. Caso o download não inicie automaticamente em instantes, <a href="https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe" download="Voxel Setup 1.0.58.exe" class="link-retry-download" id="retryDownloadBtn">clique aqui para baixar manualmente</a>.
+          Instalador oficial para Windows (.exe) • 127 MB. Caso o download não inicie automaticamente em instantes, <a href="https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe" download="Voxel-Setup-1.0.93.exe" class="link-retry-download" id="retryDownloadBtn">clique aqui para baixar manualmente</a>.
         </div>
       </div>
     </div>
@@ -562,15 +562,40 @@
     });
 
     // Auto-trigger direct file download if redirected from download CTA
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      let downloadUrl = 'https://github.com/Fuzzy-Z/PulseCord/releases/download/v1.0.93/Voxel-Setup-1.0.93.exe';
+      let fileName = 'Voxel-Setup-1.0.93.exe';
+
+      try {
+        const res = await fetch('https://api.github.com/repos/Fuzzy-Z/PulseCord/releases/latest');
+        if (res.ok) {
+          const data = await res.json();
+          const asset = data.assets?.find(a => a.name.endsWith('.exe') && !a.name.includes('blockmap'));
+          if (asset) {
+            downloadUrl = asset.browser_download_url;
+            fileName = asset.name;
+            const retry = document.getElementById('retryDownloadBtn');
+            if (retry) {
+              retry.href = downloadUrl;
+              retry.setAttribute('download', fileName);
+            }
+            const headerBtn = document.getElementById('headerDownloadBtn');
+            if (headerBtn) {
+              headerBtn.href = downloadUrl;
+              headerBtn.setAttribute('download', fileName);
+            }
+          }
+        }
+      } catch (e) {}
+
       const urlParams = new URLSearchParams(window.location.search);
       const shouldDownload = urlParams.get('download') === 'auto' || urlParams.get('dl') === '1';
       
       if (shouldDownload) {
         setTimeout(() => {
           const autoDl = document.createElement('a');
-          autoDl.href = 'https://github.com/Fuzzy-Z/voxel-download-page/releases/download/v1.0.58/Voxel.Setup.1.0.58.exe';
-          autoDl.download = 'Voxel Setup 1.0.58.exe';
+          autoDl.href = downloadUrl;
+          autoDl.download = fileName;
           document.body.appendChild(autoDl);
           autoDl.click();
           document.body.removeChild(autoDl);
